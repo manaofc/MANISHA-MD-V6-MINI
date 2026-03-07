@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💫 RG-SORAJIT&RAHUL MINI 💫</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url("https://files.catbox.moe/2s3ftq.jpg");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      font-family: 'Poppins', sans-serif;
+      animation: fadeBg 5s ease-in-out infinite alternate;
+      color: #fff;
+    }
+
+    @keyframes fadeBg {
+      from { filter: brightness(0.9); }
+      to { filter: brightness(1.1); }
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .box {
+      width: 320px;
+      padding: 25px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    #text h4 {
+      font-size: 1.3rem;
+      color: #ff0044;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px #ff3366;
+    }
+
+    .centered-text {
+      color: #fff;
+      text-align: center;
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 0.8rem;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .input-container:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+    }
+
+    .input-container select,
+    .input-container input {
+      padding: 0.7rem;
+      border: none;
+      border-radius: 0.8rem;
+      background: #e8e8e8;
+      color: #000;
+      font-size: 14px;
+      transition: box-shadow 0.3s;
+    }
+
+    .input-container select:hover,
+    .input-container input:focus {
+      box-shadow: 0 0 8px rgba(255, 0, 85, 0.7);
+      outline: none;
+    }
+
+    .input-container button {
+      padding: 1rem;
+      background: linear-gradient(135deg, #ff0044 0%, #800080 100%);
+      font-weight: 900;
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+      color: white;
+      border: none;
+      border-radius: 0.8rem;
+      transition: all 0.3s ease-in-out;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    #visitor-count {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #ffb6c1;
+      text-shadow: 0 0 8px #ff69b4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main">
+      <div class="box" id="box">
+        <div id="text">
+          <i class="fa fa-user"></i>
+          <h3 class="centered-text">Link with phone number</h3>
+          <h4>💫 SUHO MINI 💫</h4>
+          <h6> Select Your Country And Enter Number</h6>
+
+          <div class="input-container">
+            <select id="country">
+              <option value="27">🇿🇦 South Africa (+27)</option>
+              <option value="263">🇿🇼 Zimbabwe (+263)</option>
+              <option value="254">🇰🇪 Kenya (+254)</option>
+              <option value="255">🇹🇿 Tanzania (+255)</option>
+              <option value="256">🇺🇬 Uganda (+256)</option>
+              <option value="234">🇳🇬 Nigeria (+234)</option>
+              <option value="91">🇮🇳 India (+91)</option>
+              <option value="1">🇺🇸 United States (+1)</option>
+            </select>
+            <input placeholder="Eg:714757857" type="number" id="number">
+            <button id="submit">Submit</button>
+          </div>
+
+          <a id="waiting-message" class="centered-text" style="display: none;">Processing...</a>
+          <main id="pair"></main>
+
+          <div id="visitor-count"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+  <script>
+    // Visitor counter using localStorage
+    let visits = localStorage.getItem("suho_visits");
+    if (!visits) {
+      visits = 1;
+    } else {
+      visits = parseInt(visits) + 1;
+    }
+    localStorage.setItem("suho_visits", visits);
+    document.getElementById("visitor-count").innerText = `👁️ Total Users: ${visits}`;
+
+    let a = document.getElementById("pair");
+    let b = document.getElementById("submit");
+    let c = document.getElementById("number");
+    let country = document.getElementById("country");
+
+    async function Copy() {
+      let text = document.getElementById("copy").innerText;
+      let obj = document.getElementById("copy");
+      await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
+      obj.innerText = "✅ Copied!";
+      obj.style = "color:#00ff99;font-weight:bold";
+      setTimeout(() => {
+        obj.innerText = text;
+        obj.style = "color:#ff0044;font-weight:bold";
+      }, 800);
+    }
+
+    b.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!c.value) {
+        a.innerHTML = '<a style="color:white;font-weight:bold">❗Enter your WhatsApp number.</a><br><br>';
+      } else if (c.value.replace(/[^0-9]/g, "").length < 7) {
+        a.innerHTML = '<a style="color:white;font-weight:bold">❌ Invalid number format ❌</a><br><br>';
+      } else {
+        const bc = country.value + c.value.replace(/[^0-9]/g, "");
+        a.innerHTML = '<a style="color:white;font-weight:bold">Please wait... </a><br><br>';
+        let { data } = await axios(`/code?number=${bc}`);
+        let code = data.code || "Service Unavailable";
+        a.innerHTML = '<font id="copy" onclick="Copy()" style="color:#ff0044;font-weight:bold;cursor:pointer">CODE: <span style="color:white;font-weight:bold">' + code + '</span></font><br><br>';
+      }
+    });
+  </script>
+</body>
+</html>
