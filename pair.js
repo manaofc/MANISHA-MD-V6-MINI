@@ -68,19 +68,19 @@ const config = {
     MAX_RETRIES: 3,
     GROUP_INVITE_LINK: '',
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: 'https://files.catbox.moe/2s3ftq.jpg',
+    IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
     NEWSLETTER_JID: '@newsletter',
     NEWSLETTER_MESSAGE_ID: '428',
     OTP_EXPIRY: 300000,
     NEWS_JSON_URL: '',
-    BOT_NAME: 'RG-RAVAN',
-    OWNER_NAME: 'SOURAJIT',
-    OWNER_NUMBER: 'https://files.catbox.moe/2s3ftq.jpg,
+    BOT_NAME: 'MANISHA-MD-V6',
+    OWNER_NAME: 'manaofc',
+    OWNER_NUMBER: '94759934522',
     BOT_VERSION: '1.0.0',
-    BOT_FOOTER: '> rG-RâVâN xᴅ ᴍɪɴɪ',
+    BOT_FOOTER: '> _*Powered By Manaofc*_',
     CHANNEL_LINK: '',
     BUTTON_IMAGES: {
-        OWNER: 'https://files.catbox.moe/2s3ftq.jpg'
+        OWNER: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png'
     }
 };
 
