@@ -3,121 +3,204 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💫 RG-SORAJIT&RAHUL MINI 💫</title>
+  <title>MANAOFC PAIR</title> </title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-image: url("https://files.catbox.moe/2s3ftq.jpg");
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      font-family: 'Poppins', sans-serif;
-      animation: fadeBg 5s ease-in-out infinite alternate;
-      color: #fff;
+    :root{
+      --primary:#8a2be2;
+      --secondary:#00f7ff;
+      --accent:#ff2a6d;
+      --dark:#0c1020;
+      --darker:#080c18;
+      --glass:rgba(255,255,255,0.05);
+      --glass-border:rgba(255,255,255,0.1);
     }
 
-    @keyframes fadeBg {
-      from { filter: brightness(0.9); }
-      to { filter: brightness(1.1); }
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      background:linear-gradient(135deg,var(--darker),var(--dark));
+      font-family:'Rajdhani',sans-serif;
+      color:white;
+      overflow:hidden;
+      position:relative;
     }
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    body::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: radial-gradient(circle at 20% 30%, rgba(138,43,226,0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 70%, rgba(0,247,255,0.1) 0%, transparent 50%);
+      z-index:-2;
     }
 
-    .box {
-      width: 320px;
-      padding: 25px;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: 15px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
-      animation: float 3s ease-in-out infinite;
+    .grid{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background-image: linear-gradient(rgba(0,247,255,0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,247,255,0.05) 1px, transparent 1px);
+      background-size:30px 30px;
+      perspective:1000px;
+      transform-style:preserve-3d;
+      z-index:-1;
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
+    .container{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      width:100%;
+      padding:20px;
     }
 
-    #text h4 {
-      font-size: 1.3rem;
-      color: #ff0044;
-      font-weight: bold;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px #ff3366;
+    .main{
+      position:relative;
+      width:100%;
+      max-width:380px;
     }
 
-    .centered-text {
-      color: #fff;
-      text-align: center;
+    .box{
+      width:100%;
+      padding:30px;
+      position:relative;
+      text-align:center;
+      background:var(--glass);
+      border-radius:16px;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid var(--glass-border);
+      box-shadow:0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      transform:perspective(1000px) rotateY(0deg);
+      overflow:hidden;
+      transition:0.5s;
+      z-index:1;
     }
 
-    .input-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-      padding: 0.8rem;
-      transition: transform 0.3s ease-in-out;
+    .box::before{
+      content:'';
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background: linear-gradient(45deg, transparent, rgba(138,43,226,0.1), rgba(0,247,255,0.1), transparent);
+      transform:rotate(45deg);
+      animation: shine 6s infinite;
+      z-index:-1;
     }
 
-    .input-container:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+    @keyframes shine{
+      0%{transform:translateX(-100%) rotate(45deg);}
+      100%{transform:translateX(100%) rotate(45deg);}
     }
 
-    .input-container select,
-    .input-container input {
-      padding: 0.7rem;
-      border: none;
-      border-radius: 0.8rem;
-      background: #e8e8e8;
-      color: #000;
-      font-size: 14px;
-      transition: box-shadow 0.3s;
+    .box:hover{
+      transform:perspective(1000px) rotateY(5deg);
+      box-shadow:0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 15px rgba(138,43,226,0.3);
     }
 
-    .input-container select:hover,
-    .input-container input:focus {
-      box-shadow: 0 0 8px rgba(255, 0, 85, 0.7);
-      outline: none;
+    .centered-text{text-align:center; margin-bottom:20px;}
+
+    h3{
+      font-family:'Orbitron',sans-serif;
+      font-size:18px;
+      font-weight:500;
+      color:var(--secondary);
+      text-shadow:0 0 5px rgba(0,247,255,0.7);
+      margin-bottom:5px;
+      letter-spacing:1px;
     }
 
-    .input-container button {
-      padding: 1rem;
-      background: linear-gradient(135deg, #ff0044 0%, #800080 100%);
-      font-weight: 900;
-      letter-spacing: 0.2rem;
-      text-transform: uppercase;
-      color: white;
-      border: none;
-      border-radius: 0.8rem;
-      transition: all 0.3s ease-in-out;
-      cursor: pointer;
+    h6{
+      font-size:14px;
+      font-weight:400;
+      color:rgba(255,255,255,0.7);
+      margin-bottom:25px;
     }
 
-    .input-container button:hover {
-      background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
-      color: white;
-      transform: scale(1.05);
+    .input-container{
+      display:flex;
+      background: rgba(0,0,0,0.2);
+      border-radius:12px;
+      padding:4px;
+      gap:4px;
+      width:100%;
+      margin-bottom:20px;
+      border:1px solid var(--glass-border);
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
     }
 
-    #visitor-count {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #ffb6c1;
-      text-shadow: 0 0 8px #ff69b4;
+    .input-container input{
+      border-radius:8px 0 0 8px;
+      background:rgba(0,0,0,0.3);
+      width:100%;
+      flex-basis:75%;
+      padding:15px;
+      border:none;
+      border-right:1px solid rgba(138,43,226,0.3);
+      color:white;
+      font-family:'Rajdhani',sans-serif;
+      font-size:16px;
+      font-weight:500;
+      transition:all 0.3s ease;
+    }
+
+    .input-container input::placeholder{
+      color: rgba(255,255,255,0.5);
+    }
+
+    .input-container button{
+      flex-basis:25%;
+      padding:15px;
+      border-radius:0 8px 8px 0;
+      background:var(--primary);
+      font-weight:700;
+      letter-spacing:0.2rem;
+      text-transform:uppercase;
+      color:white;
+      border:none;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+
+    .input-container button:hover{
+      background:var(--accent);
+    }
+
+    #loading-spinner{
+      display:none;
+      margin-top:10px;
+      color:white;
+    }
+
+    .fa-spinner{
+      animation:spin 2s linear infinite;
+    }
+
+    @keyframes spin{
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #pair{
+      margin-top:20px;
+      font-weight:bold;
+      font-size:18px;
+      color:var(--secondary);
+      cursor:pointer;
     }
   </style>
 </head>
@@ -125,77 +208,74 @@
   <div class="container">
     <div class="main">
       <div class="box" id="box">
-        <div id="text">
-          <i class="fa fa-user"></i>
-          <h3 class="centered-text">Link with phone number</h3>
-          <h4>💫 SUHO MINI 💫</h4>
-          <h6> Select Your Country And Enter Number</h6>
+        <i class="fa fa-user fa-2x" style="margin-bottom:15px;"></i>
+        <h3 class="centered-text">Link with phone number</h3>
+        <h6>🔢 Enter your number with country code.</h6>
 
-          <div class="input-container">
-            <select id="country">
-              <option value="27">🇿🇦 South Africa (+27)</option>
-              <option value="263">🇿🇼 Zimbabwe (+263)</option>
-              <option value="254">🇰🇪 Kenya (+254)</option>
-              <option value="255">🇹🇿 Tanzania (+255)</option>
-              <option value="256">🇺🇬 Uganda (+256)</option>
-              <option value="234">🇳🇬 Nigeria (+234)</option>
-              <option value="91">🇮🇳 India (+91)</option>
-              <option value="1">🇺🇸 United States (+1)</option>
-            </select>
-            <input placeholder="Eg:714757857" type="number" id="number">
-            <button id="submit">Submit</button>
-          </div>
-
-          <a id="waiting-message" class="centered-text" style="display: none;">Processing...</a>
-          <main id="pair"></main>
-
-          <div id="visitor-count"></div>
+        <div class="input-container">
+          <input type="number" id="number" placeholder="+9475xxxxxx">
+          <button id="submit">Submit</button>
         </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+
+        <!-- Code Output -->
+        <main id="pair"></main>
       </div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
   <script>
-    // Visitor counter using localStorage
-    let visits = localStorage.getItem("suho_visits");
-    if (!visits) {
-      visits = 1;
-    } else {
-      visits = parseInt(visits) + 1;
-    }
-    localStorage.setItem("suho_visits", visits);
-    document.getElementById("visitor-count").innerText = `👁️ Total Users: ${visits}`;
-
     let a = document.getElementById("pair");
     let b = document.getElementById("submit");
     let c = document.getElementById("number");
-    let country = document.getElementById("country");
 
     async function Copy() {
       let text = document.getElementById("copy").innerText;
       let obj = document.getElementById("copy");
       await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
-      obj.innerText = "✅ Copied!";
-      obj.style = "color:#00ff99;font-weight:bold";
+      obj.innerText = "✔️ COPIED";
+      obj.style = "color:red;font-weight:bold";
       setTimeout(() => {
         obj.innerText = text;
-        obj.style = "color:#ff0044;font-weight:bold";
-      }, 800);
+        obj.style = "color:white;font-weight:bold";
+      }, 500);
     }
 
     b.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!c.value) {
-        a.innerHTML = '<a style="color:white;font-weight:bold">❗Enter your WhatsApp number.</a><br><br>';
-      } else if (c.value.replace(/[^0-9]/g, "").length < 7) {
-        a.innerHTML = '<a style="color:white;font-weight:bold">❌ Invalid number format ❌</a><br><br>';
+        a.innerHTML = '<span style="color:red;font-weight:bold">❗Enter your whatsapp number with country code.</span><br><br>';
+      } else if (c.value.replace(/[^0-9]/g, "").length < 11) {
+        a.innerHTML = '<span style="color:red;font-weight:bold">❗Invalid number format. Please try again.</span><br><br>';
       } else {
-        const bc = country.value + c.value.replace(/[^0-9]/g, "");
-        a.innerHTML = '<a style="color:white;font-weight:bold">Please wait... </a><br><br>';
-        let { data } = await axios(`/code?number=${bc}`);
-        let code = data.code || "Service Unavailable";
-        a.innerHTML = '<font id="copy" onclick="Copy()" style="color:#ff0044;font-weight:bold;cursor:pointer">CODE: <span style="color:white;font-weight:bold">' + code + '</span></font><br><br>';
+        const bc = c.value.replace(/[^0-9]/g, "");
+        let bb = "";
+        const cc = bc.split('');
+        cc.forEach((num, i) => {
+          bb += num;
+          if (i === 2 || i === 7) bb += " ";
+        });
+        c.type = "text";
+        c.value = "+" + bb;
+        c.style = "color:white;font-size:20px";
+
+        // Show spinner
+        document.getElementById("loading-spinner").style.display = "block";
+        a.innerHTML = ''; // clear previous
+
+        try {
+          let { data } = await axios(`/code?number=${bc}`);
+          let code = data.code || "❗ Service Unavailable";
+          a.innerHTML = '<span id="copy" onclick="Copy()" style="color:red;font-weight:bold; cursor:pointer">CODE: <span style="color:white;font-weight:bold">' + code + '</span></span>';
+        } catch (err) {
+          a.innerHTML = '<span style="color:red;font-weight:bold">❗ Error fetching code.</span>';
+        } finally {
+          document.getElementById("loading-spinner").style.display = "none";
+        }
       }
     });
   </script>
