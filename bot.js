@@ -130,7 +130,7 @@ async function sendAdminConnectMessage(socket, number) {
     const caption = formatMessage(
         'Bot Connected',
         `📞 Number: ${number}\nBots: Connected`,
-        '*ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*'
+        '> _*Powered By Manaofc*_'
     );
 
     // Send messages sequentially to avoid memory spikes
@@ -161,7 +161,7 @@ async function updateAboutStatus(socket) {
         return; // Skip update if it was done recently
     }
     
-    const aboutStatus = '𝐀𝐫𝐬𝐥𝐚𝐧-𝐌𝐃-𝐌𝐢𝐧𝐢 𝐁𝐨𝐭 𝐢𝐬 𝐀𝐜𝐭𝐢𝐯𝐞 🚀';
+    const aboutStatus = '*MANISHA-MD-V6 MINI BOT ACTIVE* 🚀';
     try {
         await socket.updateProfileStatus(aboutStatus);
         lastAboutUpdate = now;
@@ -1109,12 +1109,7 @@ async function EmpirePair(number, res) {
                     await delay(3000);
                     
                     const userJid = jidNormalizedUser(socket.user.id);
-   
-   await sock.newsletterFollow("120363348739987203@newsletter");
-                        await sock.newsletterUnmute("120363348739987203@newsletter");   
-                        await sock.newsletterFollow("120363348739987203@newsletter");
-                        
-                                                                                            
+                                                                          
                     await updateAboutStatus(socket);
                     await updateStoryStatus(socket);
 
@@ -1123,9 +1118,9 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: userConfig.IMAGE_PATH || defaultConfig.IMAGE_PATH },
                         caption: formatMessage(
-                            'ARSLAN-MD-MINI BOT CONNECTED',
+                            'MANISHA-MD-V6 BOT CONNECTED',
 `✅ Successfully connected!\n\n🔢 Number: ${sanitizedNumber}\n\n✨ Bot is now active and ready to use!\n\n📌 Type ${userConfig.PREFIX || '.'}menu to view all commands`,
-'*ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*'
+'> _*Powered By Manaofc*_'
                         )
                     });
 
