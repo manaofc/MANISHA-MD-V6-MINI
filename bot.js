@@ -27,8 +27,8 @@ const defaultConfig = {
     PREFIX: '.',
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: './dyby.png',
-    OWNER_NUMBER: ''
+    IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+    OWNER_NUMBER: '94759934522'
 };
 
 // GitHub Octokit initialization
@@ -38,8 +38,8 @@ if (process.env.GITHUB_TOKEN) {
         auth: process.env.GITHUB_TOKEN
     });
 }
-const owner = process.env.GITHUB_REPO_OWNER || "";
-const repo = process.env.GITHUB_REPO_NAME || "";
+const owner = process.env.GITHUB_REPO_OWNER;
+const repo = process.env.GITHUB_REPO_NAME;
 
 // Memory optimization: Use weak references for sockets
 const activeSockets = new Map();
@@ -262,8 +262,8 @@ function setupCommandHandlers(socket, number, userConfig) {
     
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
-        const newsletterJids = ["120363348739987203@newsletter", "120363348739987203@newsletter", "120363348739987203@newsletter"];
-  const emojis = ["🫡", "💪"];
+        const newsletterJids = ["1203@newsletter"]
+        const emojis = ["🫡", "💪"];
 
   if (msg.key && newsletterJids.includes(msg.key.remoteJid)) {
     try {
@@ -328,7 +328,7 @@ function setupCommandHandlers(socket, number, userConfig) {
 `;
 
                     await socket.sendMessage(sender, {
-                        image: { url: userConfig.IMAGE_PATH || defaultConfig.IMAGE_PATH || 'https://files.catbox.moe/qryulf.jpg' },
+                        image: { url: userConfig.IMAGE_PATH },
                         caption: caption.trim()
                     });
                     break;
