@@ -255,183 +255,148 @@ function setupStatusHandlers(socket, userConfig) {
 }
 
 // Memory optimization: Streamline command handlers with rate limiting
+const fs = require('fs');
+const path = require('path');
+
+// Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
     const commandCooldowns = new Map();
     const COMMAND_COOLDOWN = 1000; // 1 second per user
+    const commands = [];
+
+    // ----------------- CMD SYSTEM -----------------
+    function cmd(info, func) {
+        var data = info;
+        data.function = func;
+        if (!data.dontAddCommandList) data.dontAddCommandList = false;
+        if (!info.desc) info.desc = '';
+        if (!data.fromMe) data.fromMe = false;
+        if (!info.category) data.category = 'misc';
+        if(!info.filename) data.filename = "Not Provided";
+        commands.push(data);
+        return data;
+    }
+
+    const cos = "```";
+
+    // ---------------- BUTTON/REPLY HANDLERS -----------------
+    socket.sendInteractiveMessage = async (jid, msgData, quotedMsg, options = { type: "button" }) => {
+    let messageText = msgData.text || msgData.caption || "";
+    let CMD_ID_MAP = [];
+    let interactiveText = "";
+
+    if (options.type === "button" && msgData.buttons) {
+        // Build button message
+        msgData.buttons.forEach((button, index) => {
+            const mainNumber = `${index + 1}`;
+            interactiveText += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+            CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
+        });
+    } else if (options.type === "list" && msgData.sections) {
+        // Build list message
+        msgData.sections.forEach((section, sectionIndex) => {
+            const mainNumber = `${sectionIndex + 1}`;
+            interactiveText += `\n*${mainNumber} :* ${section.title}\n`;
+
+            section.rows.forEach((row, rowIndex) => {
+                const subNumber = `${mainNumber}.${rowIndex + 1}`;
+                interactiveText += `◦  ${subNumber} - ${row.title}\n`;
+                CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
+            });
+        });
+    } else {
+        // Non-button, plain text
+        interactiveText = ""; // no interactive options
+    }
+
+    const finalMessage = `
+${messageText}
+
+*╭─────────────────❥➻*
+*╎*  ${cos}🔢 Reply Below Number:${cos}
+*╰─────────────────❥➻*
+${interactiveText}
+
+${msgData.footer || ""}`;
+
+    const imgObj = msgData.image ? { url: msgData.image } : { url: userConfig.IMAGE_PATH };
     
+    const sentMsg = await socket.sendMessage(jid, { image: imgObj, caption: finalMessage }, { quoted: quotedMsg });
+    
+    if (CMD_ID_MAP.length > 0) {
+        await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
+    }
+};
+    // ---------------- REGISTER COMMANDS -----------------
+
+    // --- Alive Command (with image + buttons) ---
+    cmd({
+        name: 'alive',
+        desc: 'Check bot status',
+        category: 'info',
+    }, async ({ sender, args }) => {
+        const startTime = socketCreationTime.get(number) || Date.now();
+        const uptime = Math.floor((Date.now() - startTime) / 1000);
+        const hours = Math.floor(uptime / 3600);
+        const minutes = Math.floor((uptime % 3600) / 60);
+        const seconds = Math.floor(uptime % 60);
+
+        await socket.buttonMessage(sender, {
+            text: `
+╭───『 🤖 𝐁𝐎𝐓 𝐀𝐂𝐓𝐈𝐕𝐄 』───╮
+│ ⏰ Uptime: ${hours}h ${minutes}m ${seconds}s
+│ 🟢 Active sessions: ${activeSockets.size}
+│ 📱 Your number: ${number}
+╰──────────────────╯
+`,
+            footer: '> _*Powered By Manaofc*_',
+            image: userConfig.IMAGE_PATH, // Image added here
+            buttons: [
+                { buttonText: { displayText: '💪 Refresh' }, buttonId: 'alive' },
+                { buttonText: { displayText: '🫡 Close' }, buttonId: 'close' }
+            ]
+        });
+    });
+
+    // --- Config Command ---
+    
+
+    // ---------------- MESSAGE HANDLER -----------------
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
-        const newsletterJids = ["1203@newsletter"]
-        const emojis = ["🫡", "💪"];
-
-  if (msg.key && newsletterJids.includes(msg.key.remoteJid)) {
-    try {
-      const serverId = msg.newsletterServerId;
-      if (serverId) {
-      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-        await conn.newsletterReactMessage(msg.key.remoteJid, serverId.toString(), emoji);
-      }
-    } catch (e) {
-    
-    }
-  }	  
         if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // Extract text from different message types
+        // Extract text
         let text = '';
-        if (msg.message.conversation) {
-            text = msg.message.conversation.trim();
-        } else if (msg.message.extendedTextMessage?.text) {
-            text = msg.message.extendedTextMessage.text.trim();
-        } else if (msg.message.buttonsResponseMessage?.selectedButtonId) {
-            text = msg.message.buttonsResponseMessage.selectedButtonId.trim();
-        } else if (msg.message.imageMessage?.caption) {
-            text = msg.message.imageMessage.caption.trim();
-        } else if (msg.message.videoMessage?.caption) {
-            text = msg.message.videoMessage.caption.trim();
-        }
+        if (msg.message.conversation) text = msg.message.conversation.trim();
+        else if (msg.message.extendedTextMessage?.text) text = msg.message.extendedTextMessage.text.trim();
+        else if (msg.message.buttonsResponseMessage?.selectedButtonId) text = msg.message.buttonsResponseMessage.selectedButtonId.trim();
+        else if (msg.message.imageMessage?.caption) text = msg.message.imageMessage.caption.trim();
+        else if (msg.message.videoMessage?.caption) text = msg.message.videoMessage.caption.trim();
 
-        // Check if it's a command
         const prefix = userConfig.PREFIX || '.';
         if (!text.startsWith(prefix)) return;
-        
-        // Rate limiting
+
         const sender = msg.key.remoteJid;
         const now = Date.now();
-        if (commandCooldowns.has(sender) && now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) {
-            return;
-        }
+        if (commandCooldowns.has(sender) && now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
         commandCooldowns.set(sender, now);
 
         const parts = text.slice(prefix.length).trim().split(/\s+/);
-        const command = parts[0].toLowerCase();
+        const commandName = parts[0].toLowerCase();
         const args = parts.slice(1);
 
+        const command = commands.find(c => c.name === commandName);
+        if (!command) {
+            await socket.sendMessage(sender, { text: `❌ Unknown command: ${commandName}` });
+            return;
+        }
+
         try {
-            switch (command) {
-                case 'alive': {
-                    const startTime = socketCreationTime.get(number) || Date.now();
-                    const uptime = Math.floor((Date.now() - startTime) / 1000);
-                    const hours = Math.floor(uptime / 3600);
-                    const minutes = Math.floor((uptime % 3600) / 60);
-                    const seconds = Math.floor(uptime % 60);
-
-                    const caption = `
-╭───『 🤖 𝐁𝐎𝐓 𝐀𝐂𝐓𝐈𝐕𝐄 』───╮
-│ ⏰ *ᴜᴘᴛɪᴍᴇ:* ${hours}h ${minutes}m ${seconds}s
-│ 🟢 *ᴀᴄᴛɪᴠᴇ sᴇssɪᴏɴs:* ${activeSockets.size}
-│ 📱 *ʏᴏᴜʀ ɴᴜᴍʙᴇʀ:* ${number}
-╰──────────────────╯
-
-> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*
-`;
-
-                    await socket.sendMessage(sender, {
-                        image: { url: userConfig.IMAGE_PATH },
-                        caption: caption.trim()
-                    });
-                    break;
-                }
-
-                case 'config': {
-                    if (args[0] === 'set' && args.length >= 3) {
-                        const configKey = args[1].toUpperCase();
-                        const configValue = args.slice(2).join(' ');
-                        
-                        // Handle array values
-                        if (configKey === 'AUTO_LIKE_EMOJI') {
-                            userConfig[configKey] = configValue.split(',');
-                        } else {
-                            userConfig[configKey] = configValue;
-                        }
-                        
-                        await updateUserConfig(number, userConfig);
-                        
-                        await socket.sendMessage(sender, {
-                            text: `✅ Config updated: ${configKey} = ${configValue}\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*`
-                        });
-                    } else if (args[0] === 'view') {
-                        let configText = '*📋 Your Current Config:*\n\n';
-                        for (const [key, value] of Object.entries(userConfig)) {
-                            configText += `• ${key}: ${Array.isArray(value) ? value.join(', ') : value}\n`;
-                        }
-                        configText += '\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*';
-                        
-                        await socket.sendMessage(sender, { text: configText });
-                    } else {
-                        await socket.sendMessage(sender, {
-                            text: `❌ Invalid config command. Usage:\n${prefix}config set [key] [value]\n${prefix}config view\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*`
-                        });
-                    }
-                    break;
-                }
-                
-                
-                case 'confirm': {
-                    // Handle session deletion confirmation
-                    const sanitizedNumber = number.replace(/[^0-9]/g, '');
-                    
-                    await socket.sendMessage(sender, {
-                        text: '🗑️ Deleting your session...\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*'
-                    });
-                    
-                    try {
-                        // Close the socket connection
-                        const socket = activeSockets.get(sanitizedNumber);
-                        if (socket) {
-                            socket.ws.close();
-                            activeSockets.delete(sanitizedNumber);
-                            socketCreationTime.delete(sanitizedNumber);
-                        }
-                        
-                        // Delete session files
-                        const sessionPath = path.join(SESSION_BASE_PATH, `session_${sanitizedNumber}`);
-                        if (fs.existsSync(sessionPath)) {
-                            fs.removeSync(sessionPath);
-                        }
-                        
-                        // Delete from GitHub if octokit is available
-                        if (octokit) {
-                            await deleteSessionFromGitHub(sanitizedNumber);
-                        }
-                        
-                        // Remove from numbers list
-                        let numbers = [];
-                        if (fs.existsSync(NUMBER_LIST_PATH)) {
-                            numbers = JSON.parse(fs.readFileSync(NUMBER_LIST_PATH, 'utf8'));
-                        }
-                        const index = numbers.indexOf(sanitizedNumber);
-                        if (index !== -1) {
-                            numbers.splice(index, 1);
-                            fs.writeFileSync(NUMBER_LIST_PATH, JSON.stringify(numbers, null, 2));
-                        }
-                        
-                        await socket.sendMessage(sender, {
-                            text: '✅ Your session has been successfully deleted!\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*'
-                        });
-                    } catch (error) {
-                        console.error('Failed to delete session:', error);
-                        await socket.sendMessage(sender, {
-                            text: '❌ Failed to delete your session. Please try again later.\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*'
-                        });
-                    }
-                    break;
-                }
-                
-                
-
-                default: {
-                    await socket.sendMessage(sender, {
-                        text: `❌ Unknown command: ${command}\nUse ${prefix}menu to see available commands.\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*`
-                    });
-                    break;
-                }
-            }
-        } catch (error) {
-            console.error('Command handler error:', error);
-            await socket.sendMessage(sender, {
-                text: `❌ An error occurred while processing your command. Please try again.\n\n> © *ᴛʜɪꜱ ʙᴏᴛ ᴩᴏᴡᴇʀᴇᴅ ʙy ᴀʀꜱʟᴀɴᴍᴅ ᴏꜰꜰɪᴄɪᴀʟ*`
-            });
+            await command.function({ sender, args, msg });
+        } catch (err) {
+            console.error('Command error:', err);
+            await socket.sendMessage(sender, { text: '❌ Error executing command.' });
         }
     });
 }
