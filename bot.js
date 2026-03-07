@@ -286,7 +286,7 @@ function setupCommandHandlers(socket, number, userConfig) {
 
     // ---------------- BUTTON/REPLY HANDLERS -----------------
     if (!userConfig.NON_BUTTON) {
-        socket.manaofcMessage = async (jid, msgData, quotedMsg, options = { type: 'button' }) => {
+        socket.sendMessage = async (jid, msgData, quotedMsg, options = { type: 'button' }) => {
             let messageText = msgData.text || msgData.caption || '';
             let CMD_ID_MAP = [];
             let interactiveText = '';
@@ -348,7 +348,7 @@ ${msgData.footer || ''}`;
         const minutes = Math.floor((uptime % 3600) / 60);
         const seconds = Math.floor(uptime % 60);
 
-        await socket.manaofcMessage(sender, {
+        await socket.sendMessage(sender, {
             text: `
 ╭───『 🤖 𝐁𝐎𝐓 𝐀𝐂𝐓𝐈𝐕𝐄 』───╮
 │ ⏰ Uptime: ${hours}h ${minutes}m ${seconds}s
