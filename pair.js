@@ -499,7 +499,7 @@ function setupCommandHandlers(socket, number) {
         const footer = config.BOT_FOOTER;
 
         const buttons = [
-            { buttonId: `${config.PREFIX}menu`, buttonText: { displayText: 'RG-RAVAN' ᴍᴇɴᴜ 📜' }, type: 1 },
+            { buttonId: `${config.PREFIX}menu`, buttonText: { displayText: 'RG-RAVAN MENU 📜' }, type: 1 },
             { buttonId: `${config.PREFIX}ping`, buttonText: { displayText: 'RG-RAHUL mini ᴘɪɴɢ 💥' }, type: 1 }
         ];
 
