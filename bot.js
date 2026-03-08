@@ -565,7 +565,7 @@ await updateCMDStore(text.key.id, CMD_ID_MAP);
                     ? mek.message.videoMessage.caption
                     : "";
 
-            const prefix = userConfig || (body.match(/^./)?.[0] || "#");
+            const prefix = userConfig.PREFIX || '.';
             const isCmd = body.startsWith(prefix);
             if (!isCmd) return;
 
