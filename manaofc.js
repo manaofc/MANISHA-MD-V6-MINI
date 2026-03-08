@@ -235,6 +235,21 @@ function setupStatusHandlers(socket, userConfig) {
     });
 }
 
+async function downloadAndSaveMedia(message, mediaType) {
+    try {
+        const stream = await downloadContentFromMessage(message, mediaType);
+        let buffer = Buffer.from([]);
+
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk]);
+        }
+
+        return buffer;
+    } catch (error) {
+        //console.error('Download Media Error:', error);
+        throw error;
+    }
+}
 
 // Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
