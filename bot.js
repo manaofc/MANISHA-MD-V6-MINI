@@ -285,56 +285,87 @@ function setupCommandHandlers(socket, number, userConfig) {
     const cos = '```';
 
     // ---------------- BUTTON/REPLY HANDLERS -----------------
-    if (!userConfig.NON_BUTTON) {
-        socket.sendMessage = async (jid, msgData, quotedMsg, options = { type: 'button' }) => {
-            let messageText = msgData.text || msgData.caption || '';
-            let CMD_ID_MAP = [];
-            let interactiveText = '';
+      conn.buttonMessage = async (jid, msgData, quotemek) => {
+        if (!defaultConfig.NON_BUTTON) {
+          await conn.sendMessage(jid, msgData);
+        } else {
+          let result = "";
+          const CMD_ID_MAP = [];
 
-            if (options.type === 'button' && msgData.buttons) {
-                // Build button message
-                msgData.buttons.forEach((button, index) => {
-                    const mainNumber = `${index + 1}`;
-                    interactiveText += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
-                    CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
-                });
-            } else if (options.type === 'list' && msgData.sections) {
-                // Build list message
-                msgData.sections.forEach((section, sectionIndex) => {
-                    const mainNumber = `${sectionIndex + 1}`;
-                    interactiveText += `\n*${mainNumber} :* ${section.title}\n`;
+          msgData.buttons.forEach((button, bttnIndex) => {
+            const mainNumber = `${bttnIndex + 1}`;
+            result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+            CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
+          });
 
-                    section.rows.forEach((row, rowIndex) => {
-                        const subNumber = `${mainNumber}.${rowIndex + 1}`;
-                        interactiveText += `◦  ${subNumber} - ${row.title}\n`;
-                        CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
-                    });
-                });
-            }
-
-            const finalMessage = `
-${messageText}
+          const buttonMessage = `
+${msgData.text || msgData.caption}
 
 *╭─────────────────❥➻*
 *╎*  ${cos}🔢 Reply Below Number:${cos}
 *╰─────────────────❥➻*
-${interactiveText}
+${result}
 
-${msgData.footer || ''}`;
+${msgData.footer}`;
 
-            const imgObj = msgData.image ? { url: msgData.image } : { url: userConfig.IMAGE_PATH };
+          const btnimg = msgData.image
+            ? { url: msgData.image }
+            : { url: defaultConfig.IMAGE_PATH };
 
-            const sentMsg = await socket.sendMessage(jid, { image: imgObj, caption: finalMessage }, { quoted: quotedMsg });
+          if (msgData.headerType === 1 || msgData.headerType === 4) {
+            const imgmsg = await conn.sendMessage(
+              jid,
+              { image: btnimg, caption: buttonMessage },
+              { quoted: quotemek || mek }
+            );
+            await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
+          }
+        }
+      };
 
-            // Placeholder: implement this function to store mapping of CMD_ID_MAP to message
-            if (CMD_ID_MAP.length > 0) {
-                if (typeof updateCMDStore === 'function') {
-                    await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
-                }
-            }
-        };
-    }
+      conn.listMessage = async (jid, msgData, quotemek) => {
+        if (!defaultConfig.NON_BUTTON) {
+          await conn.sendMessage(jid, msgData);
+        } else {
+          let result = "";
+          const CMD_ID_MAP = [];
 
+          msgData.sections.forEach((section, sectionIndex) => {
+            const mainNumber = `${sectionIndex + 1}`;
+            result += `\n*${mainNumber} :* ${section.title}\n`;
+
+            section.rows.forEach((row, rowIndex) => {
+              const subNumber = `${mainNumber}.${rowIndex + 1}`;
+              const rowHeader = `◦  ${subNumber} - ${row.title}`;
+              result += `${rowHeader}\n`;
+              CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
+            });
+          });
+
+          const listimg = msgData.image
+            ? { url: msgData.image }
+            : { url: defaultConfig.IMAGE_PATH };
+
+          const listMessage = `
+${msgData.text}
+
+*╭─────────────────❥➻*
+*╎*  ${cos}🔢 Reply Below Number:${cos}
+*╰─────────────────❥➻*
+
+${result}
+
+${msgData.footer}`;
+
+          const text = await conn.sendMessage(
+            from,
+            { image: listimg, caption: listMessage },
+            { quoted: quotemek || mek }
+          );
+
+          await updateCMDStore(text.key.id, CMD_ID_MAP);
+        }
+      };
     // ---------------- REGISTER COMMANDS -----------------
     // --- Alive Command ---
     cmd({
