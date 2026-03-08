@@ -267,31 +267,215 @@ function setupStatusHandlers(socket, userConfig) {
 }
 
 // Setup command handlers for a single socket/session
+const axios = require("axios");
+const yts = require("yt-search");
 
 function setupCommandHandlers(socket, number, userConfig) {
-
     const commandCooldowns = new Map();
-    const COMMAND_COOLDOWN = 1000;
+    const COMMAND_COOLDOWN = 1000; // 1 second per user
+
+    // Command registry
     const commands = [];
 
-    const socketCreationTime = new Map();
-    socketCreationTime.set(number, Date.now());
-
-    const prefix = userConfig.PREFIX || '.';
-
-    // ----------------- CMD SYSTEM -----------------
     function cmd(info, func) {
-        const data = info;
-        data.function = func;
-        if (!data.dontAddCommandList) data.dontAddCommandList = false;
-        if (!info.desc) info.desc = '';
-        if (!data.fromMe) data.fromMe = false;
-        if (!info.category) data.category = 'misc';
-        if (!data.filename) data.filename = 'Not Provided';
-        commands.push(data);
-        return data;
+        info.function = func;
+        if (!info.desc) info.desc = "";
+        if (!info.category) info.category = "misc";
+        if (!info.filename) info.filename = "Not Provided";
+        if (!info.fromMe) info.fromMe = false;
+        if (!info.dontAddCommandList) info.dontAddCommandList = false;
+        commands.push(info);
+        return info;
     }
 
+    /* ================== SONG SEARCH ================== */
+    cmd(
+        {
+            pattern: "song",
+            react: "🎵",
+            alias: ["music", "yt"],
+            category: "download",
+            use: ".song <Song Name or YouTube URL>",
+            filename: __filename,
+        },
+        async (socket, mek, m, { from, prefix, q, reply }) => {
+            try {
+                if (!q) return reply("❌ *Please provide a song name or YouTube URL!*");
+
+                const search = await yts(q);
+                if (!search.videos || search.videos.length === 0)
+                    return reply("⚠️ *No song results found!*");
+
+                const song = search.videos[0];
+
+                const caption = `
+*🎶 MANISHA-MD-V6 SONG DOWNLOAD.📥*
+╭──────────────────❥
+│✨ \`Title\` : ${song.title}
+│⏰ \`Duration\` : ${song.timestamp}
+│👀 \`Views\` : ${song.views}
+│ 📅 \`Uploaded\` : ${song.ago}
+│ 📺 \`Channel\` : ${song.author.name}
+╰──────────────────❥
+> _*Powered By Manaofc*_ 
+`;
+
+                const buttons = [
+                    { buttonId: `${prefix}yta ${song.url}`, buttonText: { displayText: "AUDIO TYPE 🎙" }, type: 1 },
+                    { buttonId: `${prefix}ytd ${song.url}`, buttonText: { displayText: "DOCUMENT TYPE 📁" }, type: 1 },
+                ];
+
+                const buttonMessage = {
+                    image: song.thumbnail,
+                    caption: caption,
+                    footer: "> _Powered By Manaofc_",
+                    buttons: buttons,
+                    headerType: 4,
+                };
+
+                await socket.buttonMessage(from, buttonMessage, mek);
+            } catch (e) {
+                console.log(e);
+                reply("❌ *An error occurred while searching!*");
+            }
+        }
+    );
+
+    /* ================== AUDIO DOWNLOAD ================== */
+    cmd(
+        { pattern: "yta", react: "⬇️", dontAddCommandList: true, filename: __filename },
+        async (socket, mek, m, { from, q, reply }) => {
+            try {
+                if (!q) return reply("❌ *Need a YouTube URL!*");
+
+                await socket.sendMessage(from, { react: { text: "⬇️", key: mek.key } });
+
+                const apiUrl = `https://api-dark-shan-yt.koyeb.app/download/ytmp3-v2?url=${encodeURIComponent(q)}`;
+                const res = await axios.get(apiUrl, { timeout: 30000 });
+                const data = res.data;
+
+                if (!data.status || !data.data?.download)
+                    return reply("❌ *Failed to fetch audio link!*");
+
+                await socket.sendMessage(from, { audio: { url: data.data.download }, mimetype: "audio/mpeg" }, { quoted: mek });
+                await socket.sendMessage(from, { react: { text: "✔️", key: mek.key } });
+            } catch (e) {
+                console.log(e);
+                reply("❌ *Audio download failed!*");
+            }
+        }
+    );
+
+    /* ================== DOCUMENT DOWNLOAD ================== */
+    cmd(
+        { pattern: "ytd", react: "📁", dontAddCommandList: true, filename: __filename },
+        async (socket, mek, m, { from, q, reply }) => {
+            try {
+                if (!q) return reply("❌ *Need a YouTube URL!*");
+
+                await socket.sendMessage(from, { react: { text: "⬇️", key: mek.key } });
+
+                const apiUrl = `https://api-dark-shan-yt.koyeb.app/download/ytmp3-v2?url=${encodeURIComponent(q)}`;
+                const res = await axios.get(apiUrl, { timeout: 30000 });
+                const data = res.data;
+
+                if (!data.status || !data.data?.download)
+                    return reply("❌ *Failed to fetch document link!*");
+
+                const title = data.data.title || "Manaofc-Music";
+
+                await socket.sendMessage(
+                    from,
+                    { document: { url: data.data.download }, mimetype: "audio/mpeg", fileName: `${title}.mp3` },
+                    { quoted: mek }
+                );
+
+                await socket.sendMessage(from, { react: { text: "✔️", key: mek.key } });
+            } catch (e) {
+                console.log(e);
+                reply("❌ *Document download failed!*");
+            }
+        }
+    );
+
+    /* ================== MESSAGE HANDLER ================== */
+    socket.ev.on("messages.upsert", async ({ messages }) => {
+        const mek = messages[0];
+        if (!mek.message || mek.key.remoteJid === "status@broadcast") return;
+
+        try {
+            const type = getContentType(mek.message);
+            const from = mek.key.remoteJid;
+
+            // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
+            const body =
+                type === "conversation"
+                    ? mek.message.conversation
+                    : mek.message?.extendedTextMessage?.contextInfo?.hasOwnProperty("quotedMessage") &&
+                      (await isbtnID(mek.message?.extendedTextMessage?.contextInfo?.stanzaId)) &&
+                      getCmdForCmdId(
+                          await getCMDStore(mek.message?.extendedTextMessage?.contextInfo?.stanzaId),
+                          mek?.message?.extendedTextMessage?.text
+                      )
+                    ? getCmdForCmdId(
+                          await getCMDStore(mek.message?.extendedTextMessage?.contextInfo?.stanzaId),
+                          mek?.message?.extendedTextMessage?.text
+                      )
+                    : type === "extendedTextMessage"
+                    ? mek.message.extendedTextMessage.text
+                    : type === "imageMessage" && mek.message.imageMessage.caption
+                    ? mek.message.imageMessage.caption
+                    : type === "videoMessage" && mek.message.videoMessage.caption
+                    ? mek.message.videoMessage.caption
+                    : "";
+
+            const prefix = userConfig || (body.match(/^./)?.[0] || "#");
+            const isCmd = body.startsWith(prefix);
+            if (!isCmd) return;
+
+            const command = body.slice(prefix.length).trim().split(" ").shift().toLowerCase();
+            const args = body.trim().split(/ +/).slice(1);
+            const q = args.join(" ");
+
+            // Reply helper
+            const reply = async (text) => {
+                await socket.sendMessage(from, { text }, { quoted: mek });
+            };
+
+            // Rate limiting
+            const sender = mek.key.participant || from;
+            const now = Date.now();
+            if (commandCooldowns.has(sender)) {
+                const diff = now - commandCooldowns.get(sender);
+                if (diff < COMMAND_COOLDOWN) {
+                    return reply(`⏳ Please wait ${((COMMAND_COOLDOWN - diff) / 1000).toFixed(1)}s before using another command.`);
+                }
+            }
+            commandCooldowns.set(sender, now);
+
+            // Find and execute command
+            const cmdObj = commands.find(c => c.pattern === command || (c.alias && c.alias.includes(command)));
+            if (!cmdObj) return reply(`❌ Unknown command: ${command}\nUse ${prefix}menu to see available commands.`);
+
+            await cmdObj.function(socket, mek, mek, { from, prefix, q, args, reply });
+
+        } catch (error) {
+            console.error("Command handler error:", error);
+            await socket.sendMessage(mek.key.remoteJid, {
+                text: `❌ An error occurred while processing your command. Please try again.`
+            }, { quoted: mek });
+        }
+    });
+
+    // Cleanup old cooldowns every 10s
+    setInterval(() => {
+        const now = Date.now();
+        for (const [user, time] of commandCooldowns) {
+            if (now - time > COMMAND_COOLDOWN * 5) commandCooldowns.delete(user);
+        }
+    }, 10000);
+}
+//=========
     const cos = '```';
     const basePath = path.join(__dirname, "database");
     if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
@@ -356,33 +540,122 @@ function setupCommandHandlers(socket, number, userConfig) {
         const result = CMD_ID_MAP.find((entry) => entry.cmdId === cmdId);
         return result ? result.cmd : null;
     }
+// ---------------- BUTTON MESSAGE -----------------
+
+const NON_BUTTON = true; // Implement a switch to on/off this feature...
+
+socket.buttonMessage = async (jid, msgData, quotemek) => {
+
+if (!NON_BUTTON) {
+          await conn.sendMessage(jid, msgData);
+        } else {
+
+let result = "";
+const CMD_ID_MAP = [];
+
+msgData.buttons.forEach((button, bttnIndex) => {
+
+const mainNumber = `${bttnIndex + 1}`;
+
+result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+
+CMD_ID_MAP.push({
+cmdId: mainNumber,
+cmd: button.buttonId
+});
+
+});
+
+const buttonMessage = `
+
+${msgData.caption || msgData.text}
+
+*╭─────────────────❥➻*
+*╎*  ${cos}🔢 Reply Below Number:${cos}
+*╰─────────────────❥➻*
+
+${result}
+
+${msgData.footer || ""}
+`;
+
+const btnimg = msgData.image
+? { url: msgData.image }
+: undefined;
+
+const imgmsg = await socket.sendMessage(
+jid,
+{ image: btnimg, caption: buttonMessage },
+{ quoted: quotemek }
+);
+
+await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
+}
+};
+
+
+// ---------------- LIST MESSAGE -----------------
+
+socket.listMessage = async (jid, msgData, quotemek) => {
+
+if (!NON_BUTTON) {
+          await conn.sendMessage(jid, msgData);
+        } else {
+
+let result = "";
+const CMD_ID_MAP = [];
+
+msgData.sections.forEach((section, sectionIndex) => {
+
+const mainNumber = `${sectionIndex + 1}`;
+
+result += `\n*${mainNumber} :* ${section.title}\n`;
+
+section.rows.forEach((row, rowIndex) => {
+
+const subNumber = `${mainNumber}.${rowIndex + 1}`;
+
+result += `◦ ${subNumber} - ${row.title}\n`;
+
+CMD_ID_MAP.push({
+cmdId: subNumber,
+cmd: row.rowId
+});
+
+});
+
+});
+
+const listMessage = `
+
+${msgData.text}
+
+*╭─────────────────❥➻*
+*╎* ${cos}🔢 Reply Below Number:${cos}
+*╰─────────────────❥➻*
+
+${result}
+
+${msgData.footer || ""}
+`;
+
+const listimg = msgData.image
+? { url: msgData.image }
+: undefined;
+
+const text = await socket.sendMessage(
+jid,
+{ image: listimg, caption: listMessage },
+{ quoted: quotemek }
+);
+
+await updateCMDStore(text.key.id, CMD_ID_MAP);
+}
+};
+
 //========================        
 
-        const body =
-            type === "conversation"
-                ? mek.message.conversation
-                : mek.message?.extendedTextMessage?.contextInfo?.hasOwnProperty("quotedMessage") &&
-                  (await isbtnID(mek.message?.extendedTextMessage?.contextInfo?.stanzaId)) &&
-                  getCmdForCmdId(
-                      await getCMDStore(mek.message?.extendedTextMessage?.contextInfo?.stanzaId),
-                      mek?.message?.extendedTextMessage?.text
-                  )
-                ? getCmdForCmdId(
-                      await getCMDStore(mek.message?.extendedTextMessage?.contextInfo?.stanzaId),
-                      mek?.message?.extendedTextMessage?.text
-                  )
-                : type === "extendedTextMessage"
-                ? mek.message.extendedTextMessage.text
-                : type === "imageMessage" && mek.message.imageMessage.caption
-                ? mek.message.imageMessage.caption
-                : type === "videoMessage" && mek.message.videoMessage.caption
-                ? mek.message.videoMessage.caption
-                : "";
-
-      
         
-}
-
 // Memory optimization: Throttle message handlers
 function setupMessageHandlers(socket, userConfig) {
     let lastPresenceUpdate = 0;
