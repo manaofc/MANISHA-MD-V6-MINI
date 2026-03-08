@@ -235,11 +235,7 @@ function setupStatusHandlers(socket, userConfig) {
     });
 }
 
-function isOwner(sender) {
-    const senderNumber = sender.replace('@s.whatsapp.net', '').replace(/[^0-9]/g, '');
-    const number = config.OWNER_NUMBER.replace(/[^0-9]/g, '');
-    return senderNumber === number;
-}
+
 // Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
     const commandCooldowns = new Map();
@@ -1628,7 +1624,6 @@ reply("❌ Config update failed!")
         try {
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
-         
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
