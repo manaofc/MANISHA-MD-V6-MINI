@@ -14,6 +14,7 @@
     "cheerio": "latest",
     "pino": "latest",
     "jimp": "latest",
+    "megajs": "latest",
     "node-fetch": "latest",
     "@octokit/rest": "latest",
     "child_process": "latest",
