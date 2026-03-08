@@ -3,117 +3,204 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MINI BOT</title>
+  <title>MANAOFC PAIR</title> </title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-image: url("https://files.catbox.moe/0s594e.jpeg"); /* Set the background image */
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      font-family: Arial, sans-serif;
+    :root{
+      --primary:#8a2be2;
+      --secondary:#00f7ff;
+      --accent:#ff2a6d;
+      --dark:#0c1020;
+      --darker:#080c18;
+      --glass:rgba(255,255,255,0.05);
+      --glass-border:rgba(255,255,255,0.1);
     }
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      background:linear-gradient(135deg,var(--darker),var(--dark));
+      font-family:'Rajdhani',sans-serif;
+      color:white;
+      overflow:hidden;
+      position:relative;
     }
 
-    .box {
-      width: 300px;
-      height: 330px;
-      padding: 20px;
-      position: relative;
-      text-align: center;
-      background-color: rgba(255,255,255,0.5);
-      border-radius: 10px;
-      transform: perspective(1000px) rotateY(0deg);
-      box-shadow: none; /* Removed box shadow */
-      position: relative;
+    body::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: radial-gradient(circle at 20% 30%, rgba(138,43,226,0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 70%, rgba(0,247,255,0.1) 0%, transparent 50%);
+      z-index:-2;
     }
 
-    #text {
-      color: #000; /* Set the text color to black (#000) */
+    .grid{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background-image: linear-gradient(rgba(0,247,255,0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,247,255,0.05) 1px, transparent 1px);
+      background-size:30px 30px;
+      perspective:1000px;
+      transform-style:preserve-3d;
+      z-index:-1;
     }
 
-    .input-container input {
-      color: #000; /* Set the text color to black (#000) */
+    .container{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      width:100%;
+      padding:20px;
     }
 
-    .centered-text {
-      color: #000; /* Set the text color to black (#000) */
+    .main{
+      position:relative;
+      width:100%;
+      max-width:380px;
     }
 
-    .input-container {
-      display: flex;
-      background: white;
-      border-radius: 1rem;
-      background: linear-gradient(45deg, #c5c5c5 0%, #ffffff 100%);
-      padding: 0.3rem;
-      gap: 0.3rem;
-      max-width: 300px; /* Set your desired maximum width */
-      width: 100%;
+    .box{
+      width:100%;
+      padding:30px;
+      position:relative;
+      text-align:center;
+      background:var(--glass);
+      border-radius:16px;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid var(--glass-border);
+      box-shadow:0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      transform:perspective(1000px) rotateY(0deg);
+      overflow:hidden;
+      transition:0.5s;
+      z-index:1;
     }
 
-    .input-container input {
-      border-radius: 0.8rem 0 0 0.8rem;
-      background: #e8e8e8;
-      width: 89%;
-      flex-basis: 75%;
-      padding: 1rem;
-      border: none;
-      border-left: 2px solid #ff9d9d;
-      color: #5e5e5e;
-      transition: all 0.2s ease-in-out;
+    .box::before{
+      content:'';
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background: linear-gradient(45deg, transparent, rgba(138,43,226,0.1), rgba(0,247,255,0.1), transparent);
+      transform:rotate(45deg);
+      animation: shine 6s infinite;
+      z-index:-1;
     }
 
-    .input-container input:focus {
-      border-left: 2px solid #ff9d9d;
-      outline: none;
+    @keyframes shine{
+      0%{transform:translateX(-100%) rotate(45deg);}
+      100%{transform:translateX(100%) rotate(45deg);}
     }
 
-    .input-container button {
-      flex-basis: 25%;
-      padding: 1rem;
-      background: linear-gradient(135deg, #8a2be2 0%, #800080 100%); /* Purple background */
-      font-weight: 900;
-      letter-spacing: 0.3rem;
-      text-transform: uppercase;
-      color: white;
-      border: none;
-      width: 100%;
-      border-radius: 0 1rem 1rem 0;
-      transition: all 0.2s ease-in-out;
+    .box:hover{
+      transform:perspective(1000px) rotateY(5deg);
+      box-shadow:0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 15px rgba(138,43,226,0.3);
     }
 
-    .input-container button:hover {
-      background: linear-gradient(135deg, #A8E4A0 0%, #32CD32 100%);
-      color: red; /* Change text color on hover to red */
+    .centered-text{text-align:center; margin-bottom:20px;}
+
+    h3{
+      font-family:'Orbitron',sans-serif;
+      font-size:18px;
+      font-weight:500;
+      color:var(--secondary);
+      text-shadow:0 0 5px rgba(0,247,255,0.7);
+      margin-bottom:5px;
+      letter-spacing:1px;
     }
 
-    @media (max-width: 500px) {
-      .input-container {
-        flex-direction: column;
-      }
-
-      .input-container input {
-        border-radius: 0.8rem;
-      }
-
-      .input-container button {
-        padding: 1rem;
-        border-radius: 0.8rem;
-      }
+    h6{
+      font-size:14px;
+      font-weight:400;
+      color:rgba(255,255,255,0.7);
+      margin-bottom:25px;
     }
 
-    .centered-text {
-      text-align: center;
+    .input-container{
+      display:flex;
+      background: rgba(0,0,0,0.2);
+      border-radius:12px;
+      padding:4px;
+      gap:4px;
+      width:100%;
+      margin-bottom:20px;
+      border:1px solid var(--glass-border);
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .input-container input{
+      border-radius:8px 0 0 8px;
+      background:rgba(0,0,0,0.3);
+      width:100%;
+      flex-basis:75%;
+      padding:15px;
+      border:none;
+      border-right:1px solid rgba(138,43,226,0.3);
+      color:white;
+      font-family:'Rajdhani',sans-serif;
+      font-size:16px;
+      font-weight:500;
+      transition:all 0.3s ease;
+    }
+
+    .input-container input::placeholder{
+      color: rgba(255,255,255,0.5);
+    }
+
+    .input-container button{
+      flex-basis:25%;
+      padding:15px;
+      border-radius:0 8px 8px 0;
+      background:var(--primary);
+      font-weight:700;
+      letter-spacing:0.2rem;
+      text-transform:uppercase;
+      color:white;
+      border:none;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+
+    .input-container button:hover{
+      background:var(--accent);
+    }
+
+    #loading-spinner{
+      display:none;
+      margin-top:10px;
+      color:white;
+    }
+
+    .fa-spinner{
+      animation:spin 2s linear infinite;
+    }
+
+    @keyframes spin{
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #pair{
+      margin-top:20px;
+      font-weight:bold;
+      font-size:18px;
+      color:var(--secondary);
+      cursor:pointer;
     }
   </style>
 </head>
@@ -121,75 +208,74 @@
   <div class="container">
     <div class="main">
       <div class="box" id="box">
-        <div id="text">
-          <i class="fa fa-user"></i>
-          <p>
-            <h3 class="centered-text">∞ Link with phone number ∞</h3>
-            <br>
-            <h6>Enter Your Number With Country Code</h6>
-            <div class="input-container">
-              <input placeholder="+94xxxxxxxx" type="number" id="number" placeholder="Enter Your Phone Number With Country Code" name="">
-              <button id="submit">enter</button>
-            </div>
-           
-            <a id="waiting-message" class="centered-text" style="display: none;">in process...</a>
-            <br>
-            <br>
-            <main id="pair"></main>
-          </p>
+        <i class="fa fa-user fa-2x" style="margin-bottom:15px;"></i>
+        <h3 class="centered-text">Link with phone number</h3>
+        <h6>🔢 Enter your number with country code.</h6>
+
+        <div class="input-container">
+          <input type="number" id="number" placeholder="+9475xxxxxx">
+          <button id="submit">Submit</button>
         </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+
+        <!-- Code Output -->
+        <main id="pair"></main>
       </div>
     </div>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+
   <script>
     let a = document.getElementById("pair");
     let b = document.getElementById("submit");
     let c = document.getElementById("number");
-    let box = document.getElementById("box");
 
     async function Copy() {
       let text = document.getElementById("copy").innerText;
       let obj = document.getElementById("copy");
       await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
-      obj.innerText = "COPIED";
-      obj.style = "color:blue;font-weight:bold";
-      obj.size = "5";
+      obj.innerText = "✔️ COPIED";
+      obj.style = "color:red;font-weight:bold";
       setTimeout(() => {
         obj.innerText = text;
-        obj.style = "color:black;font-weight-bold";
-        obj.size = "5";
+        obj.style = "color:white;font-weight:bold";
       }, 500);
     }
 
     b.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!c.value) {
-        a.innerHTML = '<a style="color:black;font-weight:bold">❗Enter your whatsapp number with country code.</a><br><br>';
+        a.innerHTML = '<span style="color:red;font-weight:bold">❗Enter your whatsapp number with country code.</span><br><br>';
       } else if (c.value.replace(/[^0-9]/g, "").length < 11) {
-        a.innerHTML = '<a style="color:black;font-weight:bold">❌Invalid number format❌</a><br><br>';
+        a.innerHTML = '<span style="color:red;font-weight:bold">❗Invalid number format. Please try again.</span><br><br>';
       } else {
         const bc = c.value.replace(/[^0-9]/g, "");
         let bb = "";
-        let bbc = "";
         const cc = bc.split('');
-        cc.map(a => {
-          bbc += a;
-          if (bbc.length == 3) {
-            bb += " " + a;
-          } else if (bbc.length == 8) {
-            bb += " " + a;
-          } else {
-            bb += a;
-          }
+        cc.forEach((num, i) => {
+          bb += num;
+          if (i === 2 || i === 7) bb += " ";
         });
         c.type = "text";
         c.value = "+" + bb;
-        c.style = "color:black;font-size:20px";
-        a.innerHTML = '<a style="color:black;font-weight:bold">Please Wait... </a><br><br>';
-        let { data } = await axios(`/code?number=${bc}`);
-        let code = data.code || "Service Unavailable";
-        a.innerHTML = '<font id="copy" onclick="Copy()" style="color:red;font-weight:bold" size="5">CODE: <span style="color:black;font-weight:bold">' + code + '</span></font><br><br><br>';
+        c.style = "color:white;font-size:20px";
+
+        // Show spinner
+        document.getElementById("loading-spinner").style.display = "block";
+        a.innerHTML = ''; // clear previous
+
+        try {
+          let { data } = await axios(`/code?number=${bc}`);
+          let code = data.code || "❗ Service Unavailable";
+          a.innerHTML = '<span id="copy" onclick="Copy()" style="color:red;font-weight:bold; cursor:pointer">CODE: <span style="color:white;font-weight:bold">' + code + '</span></span>';
+        } catch (err) {
+          a.innerHTML = '<span style="color:red;font-weight:bold">❗ Error fetching code.</span>';
+        } finally {
+          document.getElementById("loading-spinner").style.display = "none";
+        }
       }
     });
   </script>
