@@ -581,7 +581,7 @@ async (socket, mek, m, { from, prefix, q, reply }) => {
         }))
 
         const buttonMessage = {
-            image: "https://i.ibb.co/S4Cf2kZg/IMG-0773.png",
+            image: defaultConfig.IMAGE_PATH,
             caption: `*MANISHA-MD-V6 XNXX DOWNLOAD 🤫*`,
             footer: '> _*Powered By Manaofc*_',
             buttons: rows,
@@ -683,7 +683,7 @@ type:1
 }))
 
 const buttonMessage = {
-image: "https://i.ibb.co/S4Cf2kZg/IMG-0773.png",
+image: defaultConfig.IMAGE_PATH,
 caption:`*MANISHA-MD XVIDEO DOWNLOAD 🔞*`,
 footer:`> _*Powered By Manaofc*_`,
 buttons: rows,
@@ -779,7 +779,7 @@ cmd(
       }));
 
       const buttonMessage = {
-        image: "https://cdn6.aptoide.com/imgs/4/8/c/48c1f18f7d65f38d0b19af5f47015e9c_fgraphic.jpg",
+        image: defaultConfig.IMAGE_PATH,
         caption: `*MANISHA-MD-V6 APK DOWNLOAD.* 📦`,
         footer: '> _*Powered By Manaofc*_ ',
         buttons: rows,
