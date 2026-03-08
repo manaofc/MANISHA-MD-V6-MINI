@@ -474,65 +474,73 @@ ${msgData.footer || ''}
 };
     // ---------------- REGISTER COMMANDS -----------------
   cmd(
-  {
-    name: "song",
-    desc: "youtube song download",
-    category: "download",
-  },
-  async (sender, msg , q) => {
-    const reply = (text) => socket.sendMessage(sender, { text }, { quoted: msg });
-    try {
-      // Get the query from user input
-      const q = args.join(" ");
-      if (!q) return reply("❌ *Please provide a song name or YouTube URL!*");
+{
+  name: "song",
+  desc: "youtube song download",
+  category: "download",
+},
+async (sender, msg, args) => {
 
-      // Search YouTube
-      const search = await yts(q);
-      if (!search.videos || search.videos.length === 0) {
-        return reply("⚠️ *No song results found!*");
-      }
+const reply = (text) => socket.sendMessage(sender, { text }, { quoted: msg });
 
-      const song = search.videos[0];
+try {
 
-      // Prepare caption
-      const caption = `
-*🎶 MANISHA-MD-V6 SONG DOWNLOAD.📥*
+const q = args.join(" ");
+if (!q) return reply("❌ *Please provide a song name or YouTube URL!*");
+
+// Search YouTube
+const search = await yts(q);
+
+if (!search.videos || search.videos.length === 0) {
+return reply("⚠️ *No song results found!*");
+}
+
+const song = search.videos[0];
+
+// Caption
+const caption = `
+*🎶 MANISHA-MD-V6 SONG DOWNLOAD 📥*
 ╭──────────────────❥
-│✨ \`Title\` : ${song.title}
-│⏰ \`Duration\` : ${song.timestamp}
-│👀 \`Views\` : ${song.views}
-│ 📅 \`Uploaded\` : ${song.ago}
-│ 📺 \`Channel\` : ${song.author.name}
+│✨ Title : ${song.title}
+│⏰ Duration : ${song.timestamp}
+│👀 Views : ${song.views}
+│ 📅 Uploaded : ${song.ago}
+│ 📺 Channel : ${song.author.name}
 ╰──────────────────❥
 
-> _*Powered By Manaofc*_`;
+> _Powered By Manaofc_`;
 
-      // Prepare buttons
-      const buttons = [
-        {
-          buttonId: `${prefix}yta ${song.url}`,
-          buttonText: { displayText: "AUDIO TYPE 🎙" },
-          type: 1,
-        },
-        {
-          buttonId: `${prefix}ytd ${song.url}`,
-          buttonText: { displayText: "DOCUMENT TYPE 📁" },
-          type: 1,
-        },
-      ];
+// Buttons
+const buttons = [
+{
+buttonId: `.yta ${song.url}`,
+buttonText: { displayText: "AUDIO TYPE 🎙" },
+type: 1
+},
+{
+buttonId: `.ytd ${song.url}`,
+buttonText: { displayText: "DOCUMENT TYPE 📁" },
+type: 1
+}
+];
 
-      // Prepare button message
-      const buttonMessage = {
-        image: song.thumbnail ,
-        caption: caption,
-        footer: "> _Powered By Manaofc_",
-        buttons: buttons,
-        headerType: 4,
-      };
+// Message
+const buttonMessage = {
+image: song.thumbnail ,
+caption: caption,
+footer: "> Powered By Manaofc",
+buttons: buttons,
+headerType: 4
+};
 
-      // Send message
-      await socket.sendMessage(sender, buttonMessage , msg);
-    });
+await socket.sendMessage(sender, buttonMessage, { quoted: msg });
+
+} catch (err) {
+console.log(err);
+reply("❌ Error while searching the song!");
+}
+
+});
   
     cmd({ 
       name: 'alive', 
