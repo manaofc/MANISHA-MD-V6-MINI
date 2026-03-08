@@ -24,7 +24,8 @@ const {
   generateWAMessageFromContent,
   prepareWAMessageMedia,
   generateForwardMessageContent,
-  proto
+  proto,
+  delay
 } = require("baileys");
 
 // Default config structure
