@@ -352,7 +352,7 @@ function setupCommandHandlers(socket, number, userConfig) {
     }
 
     // ---------------- BUTTON MESSAGE -----------------
-    const NON_BUTTON = true;
+    const NON_BUTTON = false;
 
     socket.buttonMessage = async (jid, msgData, quotemek) => {
         if (!NON_BUTTON) {
