@@ -1623,13 +1623,10 @@ reply("❌ Config update failed!")
         try {
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
-  
+          
           const isGroup = from.endsWith("@g.us");
-
-// Assuming you have a function to normalize the ID
-const normalizedUserId = jidNormalizedUser(socket.user.id); 
-const isOwner = defaultConfig.OWNER_NUMBER.includes(normalizedUserId);
-
+          const isOwner = defaultConfig.OWNER_NUMBER.includes(sender);
+          const botNumber2 = await jidNormalizedUser(conn.user.id);
            // MODE CONTROL
           if (!isOwner && defaultConfig.BOT_TYPE === "private") return;
           if (!isOwner && isGroup && defaultConfig.BOT_TYPE === "inbox") return;
