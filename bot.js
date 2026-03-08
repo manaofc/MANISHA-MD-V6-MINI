@@ -1,4 +1,5 @@
 const axios = require('axios');
+const yts = require("yt-search");
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
@@ -472,7 +473,78 @@ ${msgData.footer || ''}
     await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
 };
     // ---------------- REGISTER COMMANDS -----------------
-    cmd({ name: 'alive', desc: 'Check bot status', category: 'info' }, async ({ sender, msg }) => {
+  cmd(
+  {
+    name: "song",
+    react: "🎵",
+    alias: ["music", "yt"],
+    category: "download",
+    use: ".song <Song Name or YouTube URL>",
+  },
+  async (sender, msg , q) => {
+    try {
+      // Get the query from user input
+      const q = args.join(" ");
+      if (!q) return reply("❌ *Please provide a song name or YouTube URL!*");
+
+      // Search YouTube
+      const search = await yts(q);
+      if (!search.videos || search.videos.length === 0) {
+        return reply("⚠️ *No song results found!*");
+      }
+
+      const song = search.videos[0];
+
+      // Prepare caption
+      const caption = `
+*🎶 MANISHA-MD-V6 SONG DOWNLOAD.📥*
+╭──────────────────❥
+│✨ \`Title\` : ${song.title}
+│⏰ \`Duration\` : ${song.timestamp}
+│👀 \`Views\` : ${song.views}
+│ 📅 \`Uploaded\` : ${song.ago}
+│ 📺 \`Channel\` : ${song.author.name}
+╰──────────────────❥
+
+> _*Powered By Manaofc*_`;
+
+      // Prepare buttons
+      const buttons = [
+        {
+          buttonId: `${prefix}yta ${song.url}`,
+          buttonText: { displayText: "AUDIO TYPE 🎙" },
+          type: 1,
+        },
+        {
+          buttonId: `${prefix}ytd ${song.url}`,
+          buttonText: { displayText: "DOCUMENT TYPE 📁" },
+          type: 1,
+        },
+      ];
+
+      // Prepare button message
+      const buttonMessage = {
+        image: song.thumbnail ,
+        caption: caption,
+        footer: "> _Powered By Manaofc_",
+        buttons: buttons,
+        headerType: 4,
+      };
+
+      // Send message
+      await socket.sendMessage(sender, buttonMessage , msg);
+    } catch (e) {
+      console.error(e);
+      reply("❌ *An error occurred while searching!*");
+    }
+  }
+);
+    cmd({ 
+      name: 'alive', 
+      desc: 'Check bot status',
+      category: 'info' 
+    }, 
+        async ({ sender, msg }) => {
         const startTime = socketCreationTime.get(number) || Date.now();
         const uptime = Math.floor((Date.now() - startTime) / 1000);
         const hours = Math.floor(uptime / 3600);
@@ -495,7 +567,12 @@ ${msgData.footer || ''}
         await socket.buttonMessage(sender, buttonMessage, msg);
     });
 
-    cmd({ name: 'ping', desc: 'Check bot speed', category: 'info' }, async ({ sender, msg }) => {
+    cmd({ 
+      name: 'ping', 
+      desc: 'Check bot speed',
+      category: 'info' 
+    }, 
+        async ({ sender, msg }) => {
         const start = Date.now();
         const sent = await socket.sendMessage(sender, { text: "🏓 Pinging..." }, { quoted: msg });
         const end = Date.now();
@@ -503,7 +580,12 @@ ${msgData.footer || ''}
         await socket.sendMessage(sender, { text: `⚡ *Pong!*\nSpeed : ${speed} ms` }, { quoted: sent });
     });
 
-    cmd({ name: 'menu', desc: 'Show bot menu', category: 'menu' }, async ({ sender, msg }) => {
+    cmd({ 
+      name: 'menu', 
+      desc: 'Show bot menu', 
+      category: 'menu' 
+    }, 
+        async ({ sender, msg }) => {
         const menu = `
 ╭━━━〔 🤖 BOT MENU 〕━━━⬣
 ┃
