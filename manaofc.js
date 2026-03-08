@@ -752,7 +752,84 @@ reply("*❌ Download failed!*")
 
 })
 
+
+cmd(
+  {
+    pattern: "apk",
+    react: "📦",
+    alias: ["app", "playstore"],
+    category: "download",
+    use: ".apk *<Apk Name>*",
+    filename: __filename,
+  },
+  async (socket, mek, m, { from, prefix, q, reply }) => {
+    try {
+      if (!q) return await reply(imgMsg, mek);
+      const data = await apkdl.search(q);
+      if (!data.length) return await reply("*couldn't find anything*");
+
+      const rows = data.map(v => ({
+        buttonId: `${prefix}dapk ${v.id}`,
+        buttonText: { displayText: `${v.name}` },
+        type: 1,
+      }));
+
+      const buttonMessage = {
+        image: "https://cdn6.aptoide.com/imgs/4/8/c/48c1f18f7d65f38d0b19af5f47015e9c_fgraphic.jpg",
+        caption: `* MANISHA-MD-V6 APK DOWNLOAD.📦*`,
+        footer: '> _*Powered By Manaofc*_ ',
+        buttons: rows,
+        headerType: 4,
+      };
+
+      return await socket.buttonMessage(from, buttonMessage, mek);
+    } catch (e) {
+      console.error(e);
+      reply("*ERROR !!*");
+    }
+  }
+);
+
+cmd(
+  {
+    pattern: "dapk",
+    react: "📦",
+    dontAddCommandList: true,
+    filename: __filename,
+  },
+  async (socket, mek, m, { from, q, reply }) => {
+    try {
+      await socket.sendMessage(from, { react: { text: "🌟", key: mek.key } });
+      if (!q) return await reply("*Need apk link...❗*");
+
+      const data = await apkdl.download(q);
+      const caption = `📥 *MANISHA-MD-V6 APK DOWNLOAD* 📥\n\n` +
+        `◈ *🏷️  :* ${data.name}\n` +
+        `◈ *👤 Developers :* ${data.package}\n` +
+        `◈ *📆 Last Update :* ${data.lastup}\n` +
+        `◈ *📥 Size :* ${data.size}\n\n> _*Powered By Manaofc*_`;
+
+      await socket.sendMessage(from, { image: { url: data.icon }, caption }, { quoted: mek });
+
+      await socket.sendMessage(from, {
+        document: { url: data.dllink },
+        mimetype: "application/vnd.android.package-archive",
+        fileName: `${data.name}.apk`,
+        caption: '> _*Powered By Manaofc*_ ',
+      }, { quoted: mek });
+      
+      await socket.sendMessage(from, { react: { text: "✔", key: mek.key } });
+    } catch (e) {
+      console.error(e);
+      reply(`_An Error Found_ : *${e}*`);
+    }
+  }
+);
+
+
   
+
+
     /* ================== MESSAGE HANDLER ================== */
     socket.ev.on("messages.upsert", async ({ messages }) => {
         const mek = messages[0];
