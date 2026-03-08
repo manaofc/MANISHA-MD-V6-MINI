@@ -478,8 +478,12 @@ await updateCMDStore(text.key.id, CMD_ID_MAP);
     );
 
     /* ================== AUDIO DOWNLOAD ================== */
-    cmd(
-        { pattern: "yta", react: "⬇️", dontAddCommandList: true, filename: __filename },
+    cmd({ 
+      pattern: "yta", 
+      react: "⬇️", 
+      dontAddCommandList: true, 
+      filename: __filename 
+    },
         async (socket, mek, m, { from, q, reply }) => {
             try {
                 if (!q) return reply("❌ *Need a YouTube URL!*");
@@ -503,8 +507,12 @@ await updateCMDStore(text.key.id, CMD_ID_MAP);
     );
 
     /* ================== DOCUMENT DOWNLOAD ================== */
-    cmd(
-        { pattern: "ytd", react: "📁", dontAddCommandList: true, filename: __filename },
+    cmd({ 
+      pattern: "ytd", 
+      react: "📁", 
+      dontAddCommandList: true, 
+      filename: __filename 
+    },
         async (socket, mek, m, { from, q, reply }) => {
             try {
                 if (!q) return reply("❌ *Need a YouTube URL!*");
@@ -534,6 +542,223 @@ await updateCMDStore(text.key.id, CMD_ID_MAP);
         }
     );
 
+cmd({
+    pattern: "xnxx",
+    desc: "Download XNXX Video",
+    use: ".xnxx <query>",
+    react: "🔞",
+    category: "download",
+    filename: __filename
+},
+
+async (socket, mek, m, { from, prefix, q, reply }) => {
+    try {            
+        if (!q) return await reply('*Please enter a query!*')
+
+        const apiUrl = `https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/search?q=${encodeURIComponent(q)}&api_key=manaofc-v6 `
+
+const res = await axios.get(apiUrl, { timeout: 30000 });
+
+        // ✅ FIX HERE (results instead of result)
+        if (!res.success || !res.results || res.results.length === 0) {
+            return reply('*❌ No results found!*')
+        }
+
+        const data = res.results
+
+        const rows = data.slice(0, 50).map((v) => ({
+            buttonId: `${prefix}xnxxvid ${v.url}`,
+            buttonText: { 
+                displayText: v.title.length > 40 
+                    ? v.title.slice(0, 37) + "..." 
+                    : v.title 
+            },
+            type: 1,
+        }))
+
+        const buttonMessage = {
+            image: "https://i.ibb.co/S4Cf2kZg/IMG-0773.png",
+            caption: `*MANISHA-MD-V6 XNXX DOWNLOAD 🤫*`,
+            footer: '> _*Powered By Manaofc*_',
+            buttons: rows,
+            headerType: 4
+        }
+
+
+        return await socket.buttonMessage(from, buttonMessage, mek)
+    } catch (e) {
+      console.log(e)
+      reply('*❌ Error occurred!*');
+    }
+  }
+)
+
+cmd({
+    pattern: "xnxxvid",
+    react: "⬇️",
+    dontAddCommandList: true,
+    filename: __filename
+},
+
+async (socket, mek, m, { from, q, reply }) => {
+try {
+
+    if (!q) return await reply('*Need a video url!*')
+
+    const apiUrl = `https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/video?url=${encodeURIComponent(q)}&api_key=manaofc-v6`
+
+const res = await axios.get(apiUrl, { timeout: 30000 });
+
+
+    if (!res.success || !res.data) 
+        return reply('*❌ Failed to fetch video!*')
+
+    let data = res.data
+
+    let caption = `
+*🔞 XNXX VIDEO DOWNLOAD*
+
+╭──────────────────❥
+│🎬 \`Title\` : ${data.title}
+│⏱ \`Duration\` : ${data.duration}
+│👀 \`Views\` : ${data.views}
+│👍 \`Likes\` : ${data.likes}
+│⭐ \`Rating\` : ${data.rating}
+╰──────────────────❥
+`
+
+    await socket.sendMessage(from, { react: { text: '⬆', key: mek.key }})
+
+    await socket.sendMessage(from, {
+        image: { url: data.thumbnail },
+        caption: caption
+    }, { quoted: mek })
+
+    await socket.sendMessage(from, {
+        video: { url: data.dlink },
+        mimetype: "video/mp4"
+    }, { quoted: mek })
+
+    await socket.sendMessage(from, { react: { text: '✔', key: mek.key }})
+
+} catch (e) {
+    console.log(e)
+    reply('*❌ Download failed!*')
+}
+})
+
+//========== xvideo download ============
+cmd({
+    pattern: "xvideo",
+    desc: "Search xvideos",
+    use: ".xnxx <query>",
+    react: "🔞",
+    category: "download",
+    filename: __filename
+},
+
+async (conn, mek, m, { from, prefix, q, reply }) => {
+try {
+
+if (!q) return reply("*Please enter a search query!*")
+
+// API SEARCH
+const apiUrl = `https://api.giftedtech.co.ke/api/search/xvideossearch?apikey=gifted&query=${encodeURIComponent(q)}`
+
+const res = await axios.get(apiUrl, { timeout: 30000 });
+
+if (!res.success || !res.results || res.results.length === 0) {
+return reply("*❌ No results found!*")
+}
+
+let results = res.results
+
+// limit buttons
+const rows = results.slice(0,50).map((v,i)=>({
+buttonId: `${prefix}xvid ${v.url}`,
+buttonText:{
+displayText: v.title ? v.title.slice(0,50) : `Video ${i+1}`
+},
+type:1
+}))
+
+const buttonMessage = {
+image: "https://i.ibb.co/S4Cf2kZg/IMG-0773.png",
+caption:`*MANISHA-MD XVIDEO DOWNLOAD 🔞*`,
+footer:`> _*Powered By Manaofc*_`,
+buttons: rows,
+headerType:4
+}
+
+return await socket.buttonMessage(from, buttonMessage, mek)
+    } catch (e) {
+      console.log(e)
+      reply('*❌ Error occurred!*');
+    }
+  }
+)
+
+
+// XVIDEO DOWNLOAD
+
+cmd({
+pattern:"xvid",
+react:"⬇️",
+dontAddCommandList:true,
+filename:__filename
+},
+
+async (socket, mek, m, { from, q, reply }) => {
+
+try{
+
+if(!q) return reply("*Please provide video url!*")
+
+// API DOWNLOAD
+const apiUrl = `https://api.giftedtech.co.ke/api/download/xvideosdl?apikey=gifted&url=${encodeURIComponent(q)}`
+
+const res = await axios.get(apiUrl, { timeout: 30000 });
+
+if(!res.success || !res.result) return reply("*❌ Failed to fetch video!*")
+
+let data = res.result
+
+let caption = `
+*VIDEO DOWNLOADER*
+
+╭──────────────❍
+│ 🎬 *Title* : ${data.title || "Unknown"}
+│ 👀 *Views* : ${data.views || "N/A"}
+│ 👍 *Likes* : ${data.likes || "N/A"}
+│ 👎 *Dislikes* : ${data.dislikes || "N/A"}
+│ 📦 *Size* : ${data.size || "Unknown"}
+╰──────────────❍
+`
+
+await socket.sendMessage(from,{ react:{ text:"⬆️", key: mek.key }})
+
+// send thumbnail + info
+await socket.sendMessage(from,{
+image:{ url: data.thumbnail },
+caption: caption
+},{quoted: mek})
+
+// send video
+await socket.sendMessage(from,{
+video:{ url: data.download_url },
+mimetype:"video/mp4"
+},{quoted: mek})
+
+await socket.sendMessage(from,{ react:{ text:"✅", key: mek.key }})
+
+}catch(e){
+console.log(e)
+reply("*❌ Download failed!*")
+}
+
+})
+
+  
     /* ================== MESSAGE HANDLER ================== */
     socket.ev.on("messages.upsert", async ({ messages }) => {
         const mek = messages[0];
