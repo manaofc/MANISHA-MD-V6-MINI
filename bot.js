@@ -423,23 +423,29 @@ ${msgData.footer}`;
         const minutes = Math.floor((uptime % 3600) / 60);
         const seconds = Math.floor(uptime % 60);
 
-        await socket.sendMessage(sender, {
-            text: `
-╭───『 🤖 𝐁𝐎𝐓 𝐀𝐂𝐓𝐈𝐕𝐄 』───╮
-│ ⏰ Uptime: ${hours}h ${minutes}m ${seconds}s
-│ 🟢 Active sessions: ${activeSockets.size}
-│ 📱 Your number: ${number}
-╰──────────────────╯
-`,
-            footer: '> _*Powered By Manaofc*_',
-            image: userConfig.IMAGE_PATH,
-            buttons: [
-                { buttonText: { displayText: '💪 Refresh' }, buttonId: 'alive' },
-                { buttonText: { displayText: '🫡 Close' }, buttonId: 'close' }
-            ]
-        }, null, { type: 'button' });
-    });
+        const buttons = [
+        {
+          buttonId: `${prefix}menu`,
+          buttonText: { displayText: "MENU" },
+          type: 1,
+        },
+        {
+          buttonId: `${prefix}ping`,
+          buttonText: { displayText: "PING" },
+          type: 1,
+        },
+      ];
 
+      const buttonMessage = {
+        image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+        caption: 'MANISHA-MD-V6 alive now',
+        footer: "> _Powered By Manaofc_",
+        buttons: buttons,
+        headerType: 4,
+      };
+
+      await socket.buttonMessage(from, buttonMessage, mek);
+        
     // ---------------- MESSAGE HANDLER -----------------
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
