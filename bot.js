@@ -639,6 +639,7 @@ ${msgData.footer || ''}
                 ? mek.message.videoMessage.caption
                 : "";
 
+      
         if (!body) return;
 
         const sender = mek.key.remoteJid;
