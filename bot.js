@@ -526,14 +526,14 @@ type: 1
 
 // Message
 const buttonMessage = {
-image: song.thumbnail ,
+image: song.thumbnail,
 caption: caption,
 footer: "> Powered By Manaofc",
 buttons: buttons,
 headerType: 4
 };
 
-await socket.sendMessage(sender, buttonMessage, { quoted: msg });
+await socket.sendMessage(sender, buttonMessage, msg);
 
 } catch (err) {
 console.log(err);
