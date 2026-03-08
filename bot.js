@@ -356,8 +356,7 @@ function setupCommandHandlers(socket, number, userConfig) {
         const result = CMD_ID_MAP.find((entry) => entry.cmdId === cmdId);
         return result ? result.cmd : null;
     }
-
-          
+//========================        
 
         const body =
             type === "conversation"
@@ -381,37 +380,7 @@ function setupCommandHandlers(socket, number, userConfig) {
                 : "";
 
       
-        if (!body) return;
-
-        const sender = mek.key.remoteJid;
-        const now = Date.now();
-
-        if (commandCooldowns.has(sender) &&
-            now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
-
-        commandCooldowns.set(sender, now);
-
-        if (!body.startsWith(prefix)) return;
-
-        const parts = body.slice(prefix.length).trim().split(/ +/);
-        const commandName = parts.shift().toLowerCase();
-        const args = parts;
-
-        const command = commands.find(c => c.name === commandName);
-
-        if (!command) {
-            await socket.sendMessage(sender, { text: `❌ Unknown command: ${commandName}` });
-            return;
-        }
-
-        try {
-            await command.function({ sender, args, msg: mek });
-        } catch (err) {
-            console.log(err);
-            await socket.sendMessage(sender, { text: '❌ Error executing command' });
-        }
-    });
-
+        
 }
 
 // Memory optimization: Throttle message handlers
