@@ -257,35 +257,39 @@ function setupStatusHandlers(socket, userConfig) {
 
 // Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
-    const commandCooldowns = new Map();
-    const COMMAND_COOLDOWN = 1000; // 1 second per user
-    const commands = [];
 
-    // Placeholder: store socket creation times per number
-    const socketCreationTime = new Map();
-    socketCreationTime.set(number, Date.now());
+const commandCooldowns = new Map();
+const COMMAND_COOLDOWN = 1000;
+const commands = [];
 
-    // Placeholder: store active sockets
-    const activeSockets = new Set();
-    activeSockets.add(number);
+const socketCreationTime = new Map();
+socketCreationTime.set(number, Date.now());
 
-    // ----------------- CMD SYSTEM -----------------
-    function cmd(info, func) {
-        var data = info;
-        data.function = func;
-        if (!data.dontAddCommandList) data.dontAddCommandList = false;
-        if (!info.desc) info.desc = '';
-        if (!data.fromMe) data.fromMe = false;
-        if (!info.category) data.category = 'misc';
-        if (!info.filename) data.filename = 'Not Provided';
-        commands.push(data);
-        return data;
-    }
+const activeSockets = new Set();
+activeSockets.add(number);
 
-    const cos = '```';
+const prefix = userConfig.PREFIX || '.';
 
 
-    async function updateCMDStore(MsgID, CmdID) {
+// ----------------- CMD SYSTEM -----------------
+function cmd(info, func) {
+    var data = info;
+    data.function = func;
+    if (!data.dontAddCommandList) data.dontAddCommandList = false;
+    if (!info.desc) info.desc = '';
+    if (!data.fromMe) data.fromMe = false;
+    if (!info.category) data.category = 'misc';
+    if (!info.filename) data.filename = 'Not Provided';
+    commands.push(data);
+    return data;
+}
+
+const cos = '```';
+
+
+// ---------------- CMD STORE ----------------
+
+async function updateCMDStore(MsgID, CmdID) {
   try {
     let olds = readJSON("Non-Btn", "data.json", []);
     olds.push({ [MsgID]: CmdID });
@@ -327,163 +331,253 @@ function getCmdForCmdId(CMD_ID_MAP, cmdId) {
 }
 
 
+// ---------------- BUTTON MESSAGE -----------------
 
-    // ---------------- BUTTON/REPLY HANDLERS -----------------
-      conn.buttonMessage = async (jid, msgData, quotemek) => {
-        if (!defaultConfig.NON_BUTTON) {
-          await conn.sendMessage(jid, msgData);
-        } else {
-          let result = "";
-          const CMD_ID_MAP = [];
+socket.buttonMessage = async (jid, msgData, quotemek) => {
 
-          msgData.buttons.forEach((button, bttnIndex) => {
-            const mainNumber = `${bttnIndex + 1}`;
-            result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
-            CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
-          });
+let result = "";
+const CMD_ID_MAP = [];
 
-          const buttonMessage = `
-${msgData.text || msgData.caption}
+msgData.buttons.forEach((button, bttnIndex) => {
+
+const mainNumber = `${bttnIndex + 1}`;
+
+result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+
+CMD_ID_MAP.push({
+cmdId: mainNumber,
+cmd: button.buttonId
+});
+
+});
+
+const buttonMessage = `
+
+${msgData.caption || msgData.text}
 
 *╭─────────────────❥➻*
 *╎*  ${cos}🔢 Reply Below Number:${cos}
 *╰─────────────────❥➻*
+
 ${result}
 
-${msgData.footer}`;
+${msgData.footer || ""}
+`;
 
-          const btnimg = msgData.image
-            ? { url: msgData.image }
-            : { url: defaultConfig.IMAGE_PATH };
+const btnimg = msgData.image
+? { url: msgData.image }
+: undefined;
 
-          if (msgData.headerType === 1 || msgData.headerType === 4) {
-            const imgmsg = await conn.sendMessage(
-              jid,
-              { image: btnimg, caption: buttonMessage },
-              { quoted: quotemek || mek }
-            );
-            await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
-          }
-        }
-      };
+const imgmsg = await socket.sendMessage(
+jid,
+{ image: btnimg, caption: buttonMessage },
+{ quoted: quotemek }
+);
 
-      conn.listMessage = async (jid, msgData, quotemek) => {
-        if (!defaultConfig.NON_BUTTON) {
-          await conn.sendMessage(jid, msgData);
-        } else {
-          let result = "";
-          const CMD_ID_MAP = [];
+await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
 
-          msgData.sections.forEach((section, sectionIndex) => {
-            const mainNumber = `${sectionIndex + 1}`;
-            result += `\n*${mainNumber} :* ${section.title}\n`;
+};
 
-            section.rows.forEach((row, rowIndex) => {
-              const subNumber = `${mainNumber}.${rowIndex + 1}`;
-              const rowHeader = `◦  ${subNumber} - ${row.title}`;
-              result += `${rowHeader}\n`;
-              CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
-            });
-          });
 
-          const listimg = msgData.image
-            ? { url: msgData.image }
-            : { url: defaultConfig.IMAGE_PATH };
+// ---------------- LIST MESSAGE -----------------
 
-          const listMessage = `
+socket.listMessage = async (jid, msgData, quotemek) => {
+
+let result = "";
+const CMD_ID_MAP = [];
+
+msgData.sections.forEach((section, sectionIndex) => {
+
+const mainNumber = `${sectionIndex + 1}`;
+
+result += `\n*${mainNumber} :* ${section.title}\n`;
+
+section.rows.forEach((row, rowIndex) => {
+
+const subNumber = `${mainNumber}.${rowIndex + 1}`;
+
+result += `◦ ${subNumber} - ${row.title}\n`;
+
+CMD_ID_MAP.push({
+cmdId: subNumber,
+cmd: row.rowId
+});
+
+});
+
+});
+
+const listMessage = `
+
 ${msgData.text}
 
 *╭─────────────────❥➻*
-*╎*  ${cos}🔢 Reply Below Number:${cos}
+*╎* ${cos}🔢 Reply Below Number:${cos}
 *╰─────────────────❥➻*
 
 ${result}
 
-${msgData.footer}`;
+${msgData.footer || ""}
+`;
 
-          const text = await conn.sendMessage(
-            from,
-            { image: listimg, caption: listMessage },
-            { quoted: quotemek || mek }
-          );
+const listimg = msgData.image
+? { url: msgData.image }
+: undefined;
 
-          await updateCMDStore(text.key.id, CMD_ID_MAP);
-        }
-      };
-    // ---------------- REGISTER COMMANDS -----------------
-    // --- Alive Command ---
-    cmd({
-        name: 'alive',
-        desc: 'Check bot status',
-        category: 'info',
-    }, async ({ sender, args }) => {
-        const startTime = socketCreationTime.get(number) || Date.now();
-        const uptime = Math.floor((Date.now() - startTime) / 1000);
-        const hours = Math.floor(uptime / 3600);
-        const minutes = Math.floor((uptime % 3600) / 60);
-        const seconds = Math.floor(uptime % 60);
+const text = await socket.sendMessage(
+jid,
+{ image: listimg, caption: listMessage },
+{ quoted: quotemek }
+);
 
-        const buttons = [
-        {
-          buttonId: `${prefix}menu`,
-          buttonText: { displayText: "MENU" },
-          type: 1,
-        },
-        {
-          buttonId: `${prefix}ping`,
-          buttonText: { displayText: "PING" },
-          type: 1,
-        },
-      ];
+await updateCMDStore(text.key.id, CMD_ID_MAP);
 
-      const buttonMessage = {
-        image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-        caption: 'MANISHA-MD-V6 alive now',
-        footer: "> _Powered By Manaofc_",
-        buttons: buttons,
-        headerType: 4,
-      };
+};
 
-      await socket.buttonMessage(from, buttonMessage, mek);
-        
-    // ---------------- MESSAGE HANDLER -----------------
-    socket.ev.on('messages.upsert', async ({ messages }) => {
-        const msg = messages[0];
-        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-        // Extract text
-        let text = '';
-        if (msg.message.conversation) text = msg.message.conversation.trim();
-        else if (msg.message.extendedTextMessage?.text) text = msg.message.extendedTextMessage.text.trim();
-        else if (msg.message.buttonsResponseMessage?.selectedButtonId) text = msg.message.buttonsResponseMessage.selectedButtonId.trim();
-        else if (msg.message.imageMessage?.caption) text = msg.message.imageMessage.caption.trim();
-        else if (msg.message.videoMessage?.caption) text = msg.message.videoMessage.caption.trim();
+// ---------------- REGISTER COMMANDS -----------------
 
-        const prefix = userConfig.PREFIX || '.';
-        if (!text.startsWith(prefix)) return;
 
-        const sender = msg.key.remoteJid;
-        const now = Date.now();
-        if (commandCooldowns.has(sender) && now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
-        commandCooldowns.set(sender, now);
+// ALIVE COMMAND
 
-        const parts = text.slice(prefix.length).trim().split(/\s+/);
-        const commandName = parts[0].toLowerCase();
-        const args = parts.slice(1);
+cmd({
+name: 'alive',
+desc: 'Check bot status',
+category: 'info'
 
-        const command = commands.find(c => c.name === commandName);
-        if (!command) {
-            await socket.sendMessage(sender, { text: `❌ Unknown command: ${commandName}` });
-            return;
-        }
+}, async ({ sender, msg }) => {
 
-        try {
-            await command.function({ sender, args, msg });
-        } catch (err) {
-            console.error('Command error:', err);
-            await socket.sendMessage(sender, { text: '❌ Error executing command.' });
-        }
-    });
+const startTime = socketCreationTime.get(number) || Date.now();
+
+const uptime = Math.floor((Date.now() - startTime) / 1000);
+
+const hours = Math.floor(uptime / 3600);
+const minutes = Math.floor((uptime % 3600) / 60);
+const seconds = Math.floor(uptime % 60);
+
+const buttons = [
+
+{
+buttonId: `${prefix}menu`,
+buttonText: { displayText: "MENU" },
+type: 1
+},
+
+{
+buttonId: `${prefix}ping`,
+buttonText: { displayText: "PING" },
+type: 1
+}
+
+];
+
+const buttonMessage = {
+
+image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+
+caption: `🤖 *BOT ALIVE*
+
+⏱ Uptime : ${hours}h ${minutes}m ${seconds}s
+📱 Number : ${number}
+
+MANISHA-MD-V6 alive now`,
+
+footer: "> Powered By Manaofc",
+
+buttons: buttons,
+
+headerType: 4
+
+};
+
+await socket.buttonMessage(sender, buttonMessage, msg);
+
+});
+
+
+// ---------------- MESSAGE HANDLER -----------------
+
+socket.ev.on('messages.upsert', async ({ messages }) => {
+
+const msg = messages[0];
+
+if (!msg.message) return;
+if (msg.key.remoteJid === 'status@broadcast') return;
+
+let text = '';
+
+if (msg.message.conversation)
+text = msg.message.conversation;
+
+else if (msg.message.extendedTextMessage?.text)
+text = msg.message.extendedTextMessage.text;
+
+else if (msg.message.buttonsResponseMessage?.selectedButtonId)
+text = msg.message.buttonsResponseMessage.selectedButtonId;
+
+else if (msg.message.imageMessage?.caption)
+text = msg.message.imageMessage.caption;
+
+else if (msg.message.videoMessage?.caption)
+text = msg.message.videoMessage.caption;
+
+if (!text) return;
+
+text = text.trim();
+
+const sender = msg.key.remoteJid;
+
+const now = Date.now();
+
+if (commandCooldowns.has(sender) &&
+now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
+
+commandCooldowns.set(sender, now);
+
+if (!text.startsWith(prefix)) return;
+
+const parts = text.slice(prefix.length).trim().split(/ +/);
+
+const commandName = parts.shift().toLowerCase();
+
+const args = parts;
+
+const command = commands.find(c => c.name === commandName);
+
+if (!command) {
+
+await socket.sendMessage(sender,{
+text:`❌ Unknown command: ${commandName}`
+});
+
+return;
+
+}
+
+try {
+
+await command.function({
+
+sender,
+args,
+msg
+
+});
+
+}
+
+catch(err){
+
+console.log(err);
+
+await socket.sendMessage(sender,{
+text:'❌ Error executing command'
+});
+
+}
+
+});
+
 }
 
 // Memory optimization: Throttle message handlers
