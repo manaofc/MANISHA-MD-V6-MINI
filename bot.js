@@ -9,13 +9,23 @@ const { Octokit } = require('@octokit/rest');
 const moment = require('moment-timezone');
 
 const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    delay,
-    makeCacheableSignalKeyStore,
-    Browsers,
-    jidNormalizedUser
-} = require('baileys');
+  default: makeWASocket,
+  getAggregateVotesInPollMessage,
+  useMultiFileAuthState,
+  DisconnectReason,
+  getDevice,
+  fetchLatestBaileysVersion,
+  jidNormalizedUser,
+  getContentType,
+  Browsers,
+  makeInMemoryStore,
+  makeCacheableSignalKeyStore,
+  downloadContentFromMessage,
+  generateWAMessageFromContent,
+  prepareWAMessageMedia,
+  generateForwardMessageContent,
+  proto
+} = require("baileys");
 
 // Default config structure
 const defaultConfig = {
