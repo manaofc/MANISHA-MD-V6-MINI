@@ -8,6 +8,11 @@ const router = express.Router();
 const pino = require('pino');
 const { Octokit } = require('@octokit/rest');
 const moment = require('moment-timezone');
+const { File } = require("megajs");
+const apkdl = require('./lib/apkdl');
+const fetch = require("node-fetch");
+const cheerio = require("cheerio");
+const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require("./lib/functions");
 
 const {
   default: makeWASocket,
@@ -29,7 +34,6 @@ const {
   delay
 } = require("baileys");
 
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require("./lib/functions");
 
 // Default config structure
 const defaultConfig = {
