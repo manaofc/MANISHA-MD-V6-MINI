@@ -352,86 +352,115 @@ function setupCommandHandlers(socket, number, userConfig) {
         return Buffer.from(res.data, 'binary');
     }
 
+// ---------------- HELPER -----------------
+async function getImageBuffer(image) {
+    if (!image) return null;
+
+    // Already a buffer
+    if (Buffer.isBuffer(image)) return image;
+
+    // Local file path
+    if (typeof image === 'string' && fs.existsSync(image)) {
+        return fs.readFileSync(image);
+    }
+
+    // URL
+    if (typeof image === 'string' && image.startsWith('http')) {
+        const response = await axios.get(image, { responseType: 'arraybuffer' });
+        return Buffer.from(response.data);
+    }
+
+    throw new Error('Invalid image input for message');
+}
+
+// ---------------- BUTTON MESSAGE -----------------
     const NON_BUTTON = false;
+socket.buttonMessage = async (jid, msgData, quotemek) => {
+    if (!NON_BUTTON) {
+        await socket.sendMessage(jid, msgData);
+        return;
+    }
 
-    // ---------------- BUTTON MESSAGE -----------------
-    socket.buttonMessage = async (jid, msgData, quotemek) => {
-        if (!NON_BUTTON) {
-            await socket.sendMessage(jid, msgData);
-            return;
-        }
+    let result = '';
+    const CMD_ID_MAP = [];
 
-        let result = "";
-        const CMD_ID_MAP = [];
-
+    if (Array.isArray(msgData.buttons)) {
         msgData.buttons.forEach((button, bttnIndex) => {
             const mainNumber = `${bttnIndex + 1}`;
             result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
             CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
         });
+    }
 
-        const buttonMessageText = `
-${msgData.caption || msgData.text}
+    const buttonMessageText = `
+${msgData.caption || msgData.text || ''}
 *╭─────────────────❥➻*
-*╎*  ${cos}🔢 Reply Below Number:${cos}
+*╎*  🔢 Reply Below Number:
 *╰─────────────────❥➻*
 ${result}
-${msgData.footer || ""}
+${msgData.footer || ''}
 `;
 
-        let imgBuffer;
-        if (msgData.image) imgBuffer = await getImageBuffer(msgData.image);
+    let imgBuffer = null;
+    if (msgData.image) imgBuffer = await getImageBuffer(msgData.image);
 
-        const sentMsg = await socket.sendMessage(
-            jid,
-            { image: imgBuffer, caption: buttonMessageText },
-            { quoted: quotemek }
-        );
+    const sentMsg = await socket.sendMessage(
+        jid,
+        imgBuffer
+            ? { image: imgBuffer, caption: buttonMessageText }
+            : { text: buttonMessageText },
+        { quoted: quotemek }
+    );
 
-        await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
-    };
+    await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
+};
 
-    // ---------------- LIST MESSAGE -----------------
-    socket.listMessage = async (jid, msgData, quotemek) => {
-        if (!NON_BUTTON) {
-            await socket.sendMessage(jid, msgData);
-            return;
-        }
+// ---------------- LIST MESSAGE -----------------
+socket.listMessage = async (jid, msgData, quotemek) => {
+    if (!NON_BUTTON) {
+        await socket.sendMessage(jid, msgData);
+        return;
+    }
 
-        let result = "";
-        const CMD_ID_MAP = [];
+    let result = '';
+    const CMD_ID_MAP = [];
 
+    if (Array.isArray(msgData.sections)) {
         msgData.sections.forEach((section, sectionIndex) => {
             const mainNumber = `${sectionIndex + 1}`;
             result += `\n*${mainNumber} :* ${section.title}\n`;
-            section.rows.forEach((row, rowIndex) => {
-                const subNumber = `${mainNumber}.${rowIndex + 1}`;
-                result += `◦ ${subNumber} - ${row.title}\n`;
-                CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
-            });
+            if (Array.isArray(section.rows)) {
+                section.rows.forEach((row, rowIndex) => {
+                    const subNumber = `${mainNumber}.${rowIndex + 1}`;
+                    result += `◦ ${subNumber} - ${row.title}\n`;
+                    CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
+                });
+            }
         });
+    }
 
-        const listMessageText = `
-${msgData.text}
+    const listMessageText = `
+${msgData.text || ''}
 *╭─────────────────❥➻*
-*╎* ${cos}🔢 Reply Below Number:${cos}
+*╎* 🔢 Reply Below Number:
 *╰─────────────────❥➻*
 ${result}
-${msgData.footer || ""}
+${msgData.footer || ''}
 `;
 
-        let listImgBuffer;
-        if (msgData.image) listImgBuffer = await getImageBuffer(msgData.image);
+    let imgBuffer = null;
+    if (msgData.image) imgBuffer = await getImageBuffer(msgData.image);
 
-        const sentMsg = await socket.sendMessage(
-            jid,
-            { image: listImgBuffer, caption: listMessageText },
-            { quoted: quotemek }
-        );
+    const sentMsg = await socket.sendMessage(
+        jid,
+        imgBuffer
+            ? { image: imgBuffer, caption: listMessageText }
+            : { text: listMessageText },
+        { quoted: quotemek }
+    );
 
-        await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
-    };
-
+    await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
+};
     // ---------------- REGISTER COMMANDS -----------------
     cmd({ name: 'alive', desc: 'Check bot status', category: 'info' }, async ({ sender, msg }) => {
         const startTime = socketCreationTime.get(number) || Date.now();
