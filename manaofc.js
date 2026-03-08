@@ -29,6 +29,25 @@ const {
   delay
 } = require("baileys");
 
+
+// function.js
+const fetchJson = async (url, options) => {
+    try {
+        options ? options : {}
+        const res = await axios({
+            method: 'GET',
+            url: url,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36'
+            },
+            ...options
+        })
+        return res.data
+    } catch (err) {
+        return err
+    }
+}
+
 // Default config structure
 const defaultConfig = {
     AUTO_VIEW_STATUS: 'true',
@@ -554,10 +573,8 @@ cmd({
 async (socket, mek, m, { from, prefix, q, reply }) => {
     try {            
         if (!q) return await reply('*Please enter a query!*')
-
-        const apiUrl = `https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/search?q=${encodeURIComponent(q)}&api_key=manaofc-v6 `
-
-const res = await axios.get(apiUrl, { timeout: 30000 });
+      
+      const res = await fetchJson(`https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/search?q=${encodeURIComponent(q)}&api_key=manaofc-v6`)
 
         // ✅ FIX HERE (results instead of result)
         if (!res.success || !res.results || res.results.length === 0) {
@@ -605,9 +622,7 @@ try {
 
     if (!q) return await reply('*Need a video url!*')
 
-    const apiUrl = `https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/video?url=${encodeURIComponent(q)}&api_key=manaofc-v6`
-
-const res = await axios.get(apiUrl, { timeout: 30000 });
+      const res = await fetchJson(`https://manaofc-xnxx-api-7cc70cbd0adc.herokuapp.com/video?url=${encodeURIComponent(q)}&api_key=manaofc-v6`)
 
 
     if (!res.success || !res.data) 
@@ -663,9 +678,7 @@ try {
 if (!q) return reply("*Please enter a search query!*")
 
 // API SEARCH
-const apiUrl = `https://api.giftedtech.co.ke/api/search/xvideossearch?apikey=gifted&query=${encodeURIComponent(q)}`
-
-const res = await axios.get(apiUrl, { timeout: 30000 });
+const res = await fetchJson(`https://api.giftedtech.co.ke/api/search/xvideossearch?apikey=gifted&query=${encodeURIComponent(q)}`)
 
 if (!res.success || !res.results || res.results.length === 0) {
 return reply("*❌ No results found!*")
@@ -715,9 +728,7 @@ try{
 if(!q) return reply("*Please provide video url!*")
 
 // API DOWNLOAD
-const apiUrl = `https://api.giftedtech.co.ke/api/download/xvideosdl?apikey=gifted&url=${encodeURIComponent(q)}`
-
-const res = await axios.get(apiUrl, { timeout: 30000 });
+const res = await fetchJson(`https://api.giftedtech.co.ke/api/download/xvideosdl?apikey=gifted&url=${encodeURIComponent(q)}`)
 
 if(!res.success || !res.result) return reply("*❌ Failed to fetch video!*")
 
