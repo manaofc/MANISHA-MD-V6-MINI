@@ -285,7 +285,15 @@ function cmd(info, func) {
 }
 
 const cos = '```';
+// Base database folder
+const basePath = path.join(__dirname, "database");
 
+// Ensure base folder exists
+if (!fs.existsSync(basePath)) {
+  fs.mkdirSync(basePath);
+}
+
+// Helper: ensure folder exists
 function ensureFolder(folder) {
   const folderPath = path.join(basePath, folder);
   if (!fs.existsSync(folderPath)) {
