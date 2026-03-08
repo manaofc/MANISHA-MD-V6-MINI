@@ -476,10 +476,8 @@ ${msgData.footer || ''}
   cmd(
   {
     name: "song",
-    react: "🎵",
-    alias: ["music", "yt"],
+    desc: "youtube song download",
     category: "download",
-    use: ".song <Song Name or YouTube URL>",
   },
   async (sender, msg , q) => {
     const reply = (text) => socket.sendMessage(sender, { text }, { quoted: msg });
