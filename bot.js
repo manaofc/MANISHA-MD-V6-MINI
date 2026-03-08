@@ -256,9 +256,6 @@ function setupStatusHandlers(socket, userConfig) {
 }
 
 // Setup command handlers for a single socket/session
-const fs = require('fs');
-const path = require('path');
-
 function setupCommandHandlers(socket, number, userConfig) {
     const commandCooldowns = new Map();
     const COMMAND_COOLDOWN = 1000;
