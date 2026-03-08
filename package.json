@@ -1,6 +1,6 @@
 {
   "name": "manaofc-mini-bot",
-  "version": "v.06",
+  "version": "v.6",
   "description": " WhatsApp Bot with Multi-Number Support",
   "main": "index.js",
   "scripts": {
