@@ -1475,106 +1475,6 @@ cmd(
 );
 
   
-cmd({
-  pattern: "settings",
-  react: "⚙️",
-  alias: ["setting","botsetting"],
-  desc: "Bot Settings",
-  category: "owner",
-  filename: __filename
-},
-async (socket, mek, m, { from, prefix, reply }) => {
-
-try {
-
-if (!isOwner) return reply("🚫 *You are not authorized to use this command!*");
-
-const sections = [
-{
-title: "🤖 BOT SETTINGS",
-rows: [
-
-{
-title: "👍 AUTO LIKE STATUS ON",
-rowId: prefix + "set AUTO_LIKE_STATUS true"
-},
-{
-title: "❌ AUTO LIKE STATUS OFF",
-rowId: prefix + "set AUTO_LIKE_STATUS false"
-},
-
-{
-title: "🎙 AUTO RECORDING ON",
-rowId: prefix + "set AUTO_RECORDING true"
-},
-{
-title: "🔇 AUTO RECORDING OFF",
-rowId: prefix + "set AUTO_RECORDING false"
-},
-
-{
-title: "📚 AUTO VIEW STATUS ON",
-rowId: prefix + "set AUTO_VIEW_STATUS true"
-},
-{
-title: "❌ AUTO VIEW STATUS OFF",
-rowId: prefix + "set AUTO_VIEW_STATUS false"
-},
-
-{
-title: "🌐 BOT TYPE PUBLIC",
-rowId: prefix + "set BOT_TYPE public"
-},
-{
-title: "🔒 BOT TYPE PRIVATE",
-rowId: prefix + "set BOT_TYPE private"
-},
-
-{
-title: "🔹 PREFIX .",
-rowId: prefix + "set PREFIX ."
-},
-{
-title: "🔹 PREFIX /",
-rowId: prefix + "set PREFIX /"
-},
-{
-title: "🔹 PREFIX #",
-rowId: prefix + "set PREFIX #"
-},
-{
-title: "🔹 PREFIX ?",
-rowId: prefix + "set PREFIX ?"
-}
-
-]
-}
-];
-
-const text = `⚙️ *MANISHA-MD-V6 BOT SETTINGS*
-
-◈ Owner : manaofc
-◈ Version : v.6
-◈ Mode : ${userConfig.BOT_TYPE}
-
-`;
-
-const listMessage = {
-text: text,
-footer: '> _*Powered By Manaofc*_',
-buttonText: "🔢 Select Option",
-sections
-};
-
-await socket.sendMessage(from, listMessage, { quoted: mek });
-
-} catch(e){
-console.log(e)
-reply("❌ Error")
-}
-
-});
-
 
 
 cmd({
@@ -1625,19 +1525,7 @@ reply("❌ Config update failed!")
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
 
-            const botNumber = socket.user.id.split(":")[0];
-
-        const isGroup = from.endsWith("@g.us");
-
-        const isOwner =
-            sender.includes(userConfig.OWNER_NUMBER) ||
-            sender === botNumber;
-
-        // MODE CONTROL
-        if (!isOwner && userConfig.BOT_TYPE === "private") return;
-        if (!isOwner && isGroup && userConfig.BOT_TYPE === "inbox") return;
-        if (!isOwner && !isGroup && userConfig.BOT_TYPE === "groups") return;
-
+            
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
