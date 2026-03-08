@@ -961,9 +961,6 @@ async function EmpirePair(number, res) {
                     await delay(3000);
                     
                     const userJid = jidNormalizedUser(socket.user.id);
-                                                                          
-                    await updateAboutStatus(socket);
-                    await updateStoryStatus(socket);
 
                     activeSockets.set(sanitizedNumber, socket);
 
