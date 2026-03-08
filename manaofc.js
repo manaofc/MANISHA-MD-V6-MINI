@@ -10,7 +10,7 @@ const { Octokit } = require('@octokit/rest');
 const moment = require('moment-timezone');
 const { File } = require("megajs");
 const apkdl = require('./lib/apkdl');
-const fetch = require("node-fetch");
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const cheerio = require("cheerio");
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require("./lib/functions");
 
