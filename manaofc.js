@@ -889,6 +889,12 @@ cmd(
             const cmdObj = commands.find(c => c.pattern === command || (c.alias && c.alias.includes(command)));
             if (!cmdObj) return reply(`❌ Unknown command: ${command}\nUse ${prefix}menu to see available commands.`);
 
+          // === REACTION SUPPORT ===
+          if (cmdObj.react) {
+            await socket.sendMessage(from, {
+              react: { text: cmdObj.react, key: mek.key }
+            });
+          }
             await cmdObj.function(socket, mek, mek, { from, prefix, q, args, reply });
 
         } catch (error) {
