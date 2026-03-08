@@ -38,8 +38,7 @@ const defaultConfig = {
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
     IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-    OWNER_NUMBER: '94759934522',
-    NON_BUTTON: 'true'
+    OWNER_NUMBER: '94759934522'
 };
 
 // GitHub Octokit initialization
