@@ -1624,7 +1624,7 @@ reply("❌ Config update failed!")
           const type = getContentType(mek.message);
           const from = mek.key?.remoteJid; // Optional chaining to avoid errors
            // Use let instead of const to avoid redeclaration issues
-          let sender = mek.key?.participant || from;
+          
 
           const isGroup = from?.endsWith("@g.us"); // Check if it's a group
           const isOwner = defaultConfig.OWNER_NUMBER.includes(sanitizedNumber(sender)); // Check if sender is owner
