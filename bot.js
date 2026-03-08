@@ -256,137 +256,114 @@ function setupStatusHandlers(socket, userConfig) {
 }
 
 // Setup command handlers for a single socket/session
+const fs = require('fs');
+const path = require('path');
+
 function setupCommandHandlers(socket, number, userConfig) {
+    const commandCooldowns = new Map();
+    const COMMAND_COOLDOWN = 1000;
+    const commands = [];
 
-const commandCooldowns = new Map();
-const COMMAND_COOLDOWN = 1000;
-const commands = [];
+    const socketCreationTime = new Map();
+    socketCreationTime.set(number, Date.now());
 
-const socketCreationTime = new Map();
-socketCreationTime.set(number, Date.now());
+    const prefix = userConfig.PREFIX || '.';
+    const cos = '```';
 
-const activeSockets = new Set();
-activeSockets.add(number);
-
-const prefix = userConfig.PREFIX || '.';
-
-
-// ----------------- CMD SYSTEM -----------------
-function cmd(info, func) {
-    var data = info;
-    data.function = func;
-    if (!data.dontAddCommandList) data.dontAddCommandList = false;
-    if (!info.desc) info.desc = '';
-    if (!data.fromMe) data.fromMe = false;
-    if (!info.category) data.category = 'misc';
-    if (!info.filename) data.filename = 'Not Provided';
-    commands.push(data);
-    return data;
-}
-
-const cos = '```';
-// Base database folder
-const basePath = path.join(__dirname, "database");
-
-// Ensure base folder exists
-if (!fs.existsSync(basePath)) {
-  fs.mkdirSync(basePath);
-}
-
-// Helper: ensure folder exists
-function ensureFolder(folder) {
-  const folderPath = path.join(basePath, folder);
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath);
-  }
-}
-
-// Helper: read JSON
-function readJSON(folder, file, defaultData = []) {
-  ensureFolder(folder);
-  const filePath = path.join(basePath, folder, file);
-
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
-    return defaultData;
-  }
-
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
-}
-
-// Helper: write JSON
-function writeJSON(folder, file, data) {
-  ensureFolder(folder);
-  const filePath = path.join(basePath, folder, file);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-// ---------------- CMD STORE ----------------
-
-async function updateCMDStore(MsgID, CmdID) {
-  try {
-    let olds = readJSON("Non-Btn", "data.json", []);
-    olds.push({ [MsgID]: CmdID });
-    writeJSON("Non-Btn", "data.json", olds);
-    return true;
-  } catch (e) {
-    console.log(e);
-    return false;
-  }
-}
-
-async function isbtnID(MsgID) {
-  try {
-    let olds = readJSON("Non-Btn", "data.json", []);
-    return olds.some((item) => item[MsgID]);
-  } catch {
-    return false;
-  }
-}
-
-async function getCMDStore(MsgID) {
-  try {
-    let olds = readJSON("Non-Btn", "data.json", []);
-    for (const item of olds) {
-      if (item[MsgID]) {
-        return item[MsgID];
-      }
+    // ----------------- CMD SYSTEM -----------------
+    function cmd(info, func) {
+        const data = { ...info, function: func };
+        if (!data.dontAddCommandList) data.dontAddCommandList = false;
+        if (!info.desc) info.desc = '';
+        if (!data.fromMe) data.fromMe = false;
+        if (!info.category) data.category = 'misc';
+        if (!info.filename) data.filename = 'Not Provided';
+        commands.push(data);
+        return data;
     }
-    return null;
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-}
 
-function getCmdForCmdId(CMD_ID_MAP, cmdId) {
-  const result = CMD_ID_MAP.find((entry) => entry.cmdId === cmdId);
-  return result ? result.cmd : null;
-}
+    // Base database folder
+    const basePath = path.join(__dirname, "database");
+    if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
 
+    function ensureFolder(folder) {
+        const folderPath = path.join(basePath, folder);
+        if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath);
+    }
 
-// ---------------- BUTTON MESSAGE -----------------
+    function readJSON(folder, file, defaultData = []) {
+        ensureFolder(folder);
+        const filePath = path.join(basePath, folder, file);
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+            return defaultData;
+        }
+        return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    }
 
-socket.buttonMessage = async (jid, msgData, quotemek) => {
+    function writeJSON(folder, file, data) {
+        ensureFolder(folder);
+        const filePath = path.join(basePath, folder, file);
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    }
 
-let result = "";
-const CMD_ID_MAP = [];
+    // ---------------- CMD STORE ----------------
+    async function updateCMDStore(MsgID, CmdID) {
+        try {
+            const olds = readJSON("Non-Btn", "data.json", []);
+            olds.push({ [MsgID]: CmdID });
+            writeJSON("Non-Btn", "data.json", olds);
+            return true;
+        } catch (e) {
+            console.log(e);
+            return false;
+        }
+    }
 
-msgData.buttons.forEach((button, bttnIndex) => {
+    async function isbtnID(MsgID) {
+        try {
+            const olds = readJSON("Non-Btn", "data.json", []);
+            return olds.some(item => item.hasOwnProperty(MsgID));
+        } catch {
+            return false;
+        }
+    }
 
-const mainNumber = `${bttnIndex + 1}`;
+    async function getCMDStore(MsgID) {
+        try {
+            const olds = readJSON("Non-Btn", "data.json", []);
+            for (const item of olds) {
+                if (item[MsgID]) return item[MsgID];
+            }
+            return null;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
 
-result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+    function getCmdForCmdId(CMD_ID_MAP, cmdId) {
+        const result = CMD_ID_MAP.find(entry => entry.cmdId === cmdId);
+        return result ? result.cmd : null;
+    }
 
-CMD_ID_MAP.push({
-cmdId: mainNumber,
-cmd: button.buttonId
-});
+    // ---------------- BUTTON MESSAGE -----------------
+    const NON_BUTTON = true;
 
-});
+    socket.buttonMessage = async (jid, msgData, quotemek) => {
+        if (!NON_BUTTON) {
+            await socket.sendMessage(jid, msgData);
+        } else {
+            let result = "";
+            const CMD_ID_MAP = [];
 
-const buttonMessage = `
+            msgData.buttons.forEach((button, bttnIndex) => {
+                const mainNumber = `${bttnIndex + 1}`;
+                result += `\n◈ *${mainNumber} - ${button.buttonText.displayText}*`;
+                CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
+            });
 
+            const buttonMessage = `
 ${msgData.caption || msgData.text}
 
 *╭─────────────────❥➻*
@@ -398,51 +375,38 @@ ${result}
 ${msgData.footer || ""}
 `;
 
-const btnimg = msgData.image
-? { url: msgData.image }
-: undefined;
+            const btnimg = msgData.image ? { url: msgData.image } : undefined;
 
-const imgmsg = await socket.sendMessage(
-jid,
-{ image: btnimg, caption: buttonMessage },
-{ quoted: quotemek }
-);
+            const imgmsg = await socket.sendMessage(
+                jid,
+                { image: btnimg, caption: buttonMessage },
+                { quoted: quotemek }
+            );
 
-await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
+            await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
+        }
+    };
 
-};
+    // ---------------- LIST MESSAGE -----------------
+    socket.listMessage = async (jid, msgData, quotemek) => {
+        if (!NON_BUTTON) {
+            await socket.sendMessage(jid, msgData);
+        } else {
+            let result = "";
+            const CMD_ID_MAP = [];
 
+            msgData.sections.forEach((section, sectionIndex) => {
+                const mainNumber = `${sectionIndex + 1}`;
+                result += `\n*${mainNumber} :* ${section.title}\n`;
 
-// ---------------- LIST MESSAGE -----------------
+                section.rows.forEach((row, rowIndex) => {
+                    const subNumber = `${mainNumber}.${rowIndex + 1}`;
+                    result += `◦ ${subNumber} - ${row.title}\n`;
+                    CMD_ID_MAP.push({ cmdId: subNumber, cmd: row.rowId });
+                });
+            });
 
-socket.listMessage = async (jid, msgData, quotemek) => {
-
-let result = "";
-const CMD_ID_MAP = [];
-
-msgData.sections.forEach((section, sectionIndex) => {
-
-const mainNumber = `${sectionIndex + 1}`;
-
-result += `\n*${mainNumber} :* ${section.title}\n`;
-
-section.rows.forEach((row, rowIndex) => {
-
-const subNumber = `${mainNumber}.${rowIndex + 1}`;
-
-result += `◦ ${subNumber} - ${row.title}\n`;
-
-CMD_ID_MAP.push({
-cmdId: subNumber,
-cmd: row.rowId
-});
-
-});
-
-});
-
-const listMessage = `
-
+            const listMessage = `
 ${msgData.text}
 
 *╭─────────────────❥➻*
@@ -454,112 +418,64 @@ ${result}
 ${msgData.footer || ""}
 `;
 
-const listimg = msgData.image
-? { url: msgData.image }
-: undefined;
+            const listimg = msgData.image ? { url: msgData.image } : undefined;
 
-const text = await socket.sendMessage(
-jid,
-{ image: listimg, caption: listMessage },
-{ quoted: quotemek }
-);
+            const textMsg = await socket.sendMessage(
+                jid,
+                { image: listimg, caption: listMessage },
+                { quoted: quotemek }
+            );
 
-await updateCMDStore(text.key.id, CMD_ID_MAP);
+            await updateCMDStore(textMsg.key.id, CMD_ID_MAP);
+        }
+    };
 
-};
+    // ---------------- REGISTER COMMANDS -----------------
+    cmd({
+        name: 'alive',
+        desc: 'Check bot status',
+        category: 'info'
+    }, async ({ sender, msg }) => {
+        const startTime = socketCreationTime.get(number) || Date.now();
+        const uptime = Math.floor((Date.now() - startTime) / 1000);
+        const hours = Math.floor(uptime / 3600);
+        const minutes = Math.floor((uptime % 3600) / 60);
+        const seconds = Math.floor(uptime % 60);
 
+        const buttons = [
+            { buttonId: `${prefix}menu`, buttonText: { displayText: "MENU" }, type: 1 },
+            { buttonId: `${prefix}ping`, buttonText: { displayText: "PING" }, type: 1 }
+        ];
 
-// ---------------- REGISTER COMMANDS -----------------
+        const buttonMessage = {
+            image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+            caption: `🤖 *BOT ALIVE*\n\n⏱ Uptime : ${hours}h ${minutes}m ${seconds}s\n📱 Number : ${number}\n\nMANISHA-MD-V6 alive now`,
+            footer: "> Powered By Manaofc",
+            buttons: buttons,
+            headerType: 4
+        };
 
-
-// ALIVE COMMAND
-
-cmd({
-name: 'alive',
-desc: 'Check bot status',
-category: 'info'
-
-}, async ({ sender, msg }) => {
-
-const startTime = socketCreationTime.get(number) || Date.now();
-
-const uptime = Math.floor((Date.now() - startTime) / 1000);
-
-const hours = Math.floor(uptime / 3600);
-const minutes = Math.floor((uptime % 3600) / 60);
-const seconds = Math.floor(uptime % 60);
-
-const buttons = [
-
-{
-buttonId: `${prefix}menu`,
-buttonText: { displayText: "MENU" },
-type: 1
-},
-
-{
-buttonId: `${prefix}ping`,
-buttonText: { displayText: "PING" },
-type: 1
-}
-
-];
-
-const buttonMessage = {
-
-image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-
-caption: `🤖 *BOT ALIVE*
-
-⏱ Uptime : ${hours}h ${minutes}m ${seconds}s
-📱 Number : ${number}
-
-MANISHA-MD-V6 alive now`,
-
-footer: "> Powered By Manaofc",
-
-buttons: buttons,
-
-headerType: 4
-
-};
-
-await socket.buttonMessage(sender, buttonMessage, msg);
-
-});
-
-cmd({
-name: 'ping',
-desc: 'Check bot speed',
-category: 'info'
-
-}, async ({ sender, msg }) => {
-
-const start = Date.now();
-
-const sent = await socket.sendMessage(sender,{
-text: "🏓 Pinging..."
-},{ quoted: msg });
-
-const end = Date.now();
-
-const speed = end - start;
-
-await socket.sendMessage(sender,{
-text: `⚡ *Pong!*\n\nSpeed : ${speed} ms`
-},{ quoted: sent });
-
-});
+        await socket.buttonMessage(sender, buttonMessage, msg);
+    });
 
     cmd({
-name: 'menu',
-desc: 'Show bot menu',
-category: 'menu'
+        name: 'ping',
+        desc: 'Check bot speed',
+        category: 'info'
+    }, async ({ sender, msg }) => {
+        const start = Date.now();
+        const sent = await socket.sendMessage(sender, { text: "🏓 Pinging..." }, { quoted: msg });
+        const end = Date.now();
+        const speed = end - start;
+        await socket.sendMessage(sender, { text: `⚡ *Pong!*\n\nSpeed : ${speed} ms` }, { quoted: sent });
+    });
 
-}, async ({ sender, msg }) => {
-
-let menu = `
-
+    cmd({
+        name: 'menu',
+        desc: 'Show bot menu',
+        category: 'menu'
+    }, async ({ sender, msg }) => {
+        let menu = `
 ╭━━━〔 🤖 BOT MENU 〕━━━⬣
 ┃
 ┃ ✦ ${prefix}alive
@@ -569,124 +485,64 @@ let menu = `
 ╰━━━━━━━━━━━━━━⬣
 `;
 
-const buttons = [
+        const buttons = [
+            { buttonId: `${prefix}ping`, buttonText: { displayText: "PING" }, type: 1 },
+            { buttonId: `${prefix}alive`, buttonText: { displayText: "ALIVE" }, type: 1 }
+        ];
 
-{
-buttonId: `${prefix}ping`,
-buttonText: { displayText: "PING" },
-type: 1
-},
+        const buttonMessage = {
+            image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+            caption: menu,
+            footer: "MANISHA-MD-V6",
+            buttons: buttons,
+            headerType: 4
+        };
 
-{
-buttonId: `${prefix}alive`,
-buttonText: { displayText: "ALIVE" },
-type: 1
-}
+        await socket.buttonMessage(sender, buttonMessage, msg);
+    });
 
-];
+    // ---------------- MESSAGE HANDLER -----------------
+    socket.ev.on('messages.upsert', async ({ messages }) => {
+        const msg = messages[0];
+        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
-const buttonMessage = {
+        let text = '';
 
-image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+        if (msg.message.conversation) text = msg.message.conversation;
+        else if (msg.message.extendedTextMessage?.text) text = msg.message.extendedTextMessage.text;
+        else if (msg.message.buttonsResponseMessage?.selectedButtonId) text = msg.message.buttonsResponseMessage.selectedButtonId;
+        else if (msg.message.imageMessage?.caption) text = msg.message.imageMessage.caption;
+        else if (msg.message.videoMessage?.caption) text = msg.message.videoMessage.caption;
 
-caption: menu,
+        if (!text) return;
+        text = text.trim();
 
-footer: "MANISHA-MD-V6",
+        // Use participant for group cooldown
+        const sender = msg.key.participant || msg.key.remoteJid;
 
-buttons: buttons,
+        const now = Date.now();
+        if (commandCooldowns.has(sender) && now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
+        commandCooldowns.set(sender, now);
 
-headerType: 4
+        if (!text.startsWith(prefix)) return;
 
-};
+        const parts = text.slice(prefix.length).trim().split(/ +/);
+        const commandName = parts.shift().toLowerCase();
+        const args = parts;
 
-await socket.buttonMessage(sender, buttonMessage, msg);
+        const command = commands.find(c => c.name === commandName);
+        if (!command) {
+            await socket.sendMessage(sender, { text: `❌ Unknown command: ${commandName}` });
+            return;
+        }
 
-});
-// ---------------- MESSAGE HANDLER -----------------
-
-socket.ev.on('messages.upsert', async ({ messages }) => {
-
-const msg = messages[0];
-
-if (!msg.message) return;
-if (msg.key.remoteJid === 'status@broadcast') return;
-
-let text = '';
-
-if (msg.message.conversation)
-text = msg.message.conversation;
-
-else if (msg.message.extendedTextMessage?.text)
-text = msg.message.extendedTextMessage.text;
-
-else if (msg.message.buttonsResponseMessage?.selectedButtonId)
-text = msg.message.buttonsResponseMessage.selectedButtonId;
-
-else if (msg.message.imageMessage?.caption)
-text = msg.message.imageMessage.caption;
-
-else if (msg.message.videoMessage?.caption)
-text = msg.message.videoMessage.caption;
-
-if (!text) return;
-
-text = text.trim();
-
-const sender = msg.key.remoteJid;
-
-const now = Date.now();
-
-if (commandCooldowns.has(sender) &&
-now - commandCooldowns.get(sender) < COMMAND_COOLDOWN) return;
-
-commandCooldowns.set(sender, now);
-
-if (!text.startsWith(prefix)) return;
-
-const parts = text.slice(prefix.length).trim().split(/ +/);
-
-const commandName = parts.shift().toLowerCase();
-
-const args = parts;
-
-const command = commands.find(c => c.name === commandName);
-
-if (!command) {
-
-await socket.sendMessage(sender,{
-text:`❌ Unknown command: ${commandName}`
-});
-
-return;
-
-}
-
-try {
-
-await command.function({
-
-sender,
-args,
-msg
-
-});
-
-}
-
-catch(err){
-
-console.log(err);
-
-await socket.sendMessage(sender,{
-text:'❌ Error executing command'
-});
-
-}
-
-});
-
-}
-
+        try {
+            await command.function({ sender, args, msg });
+        } catch (err) {
+            console.log(err);
+            await socket.sendMessage(sender, { text: '❌ Error executing command' });
+        }
+    });
 // Memory optimization: Throttle message handlers
 function setupMessageHandlers(socket, userConfig) {
     let lastPresenceUpdate = 0;
