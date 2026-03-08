@@ -256,6 +256,7 @@ function setupStatusHandlers(socket, userConfig) {
 }
 
 // Setup command handlers for a single socket/session
+
 function setupCommandHandlers(socket, number, userConfig) {
 
     const commandCooldowns = new Map();
@@ -264,9 +265,6 @@ function setupCommandHandlers(socket, number, userConfig) {
 
     const socketCreationTime = new Map();
     socketCreationTime.set(number, Date.now());
-
-    const activeSockets = new Set();
-    activeSockets.add(number);
 
     const prefix = userConfig.PREFIX || '.';
 
@@ -278,16 +276,13 @@ function setupCommandHandlers(socket, number, userConfig) {
         if (!info.desc) info.desc = '';
         if (!data.fromMe) data.fromMe = false;
         if (!info.category) data.category = 'misc';
-        if (!info.filename) data.filename = 'Not Provided';
+        if (!data.filename) data.filename = 'Not Provided';
         commands.push(data);
         return data;
     }
 
     const cos = '```';
-
-    // Base database folder
     const basePath = path.join(__dirname, "database");
-
     if (!fs.existsSync(basePath)) fs.mkdirSync(basePath);
 
     function ensureFolder(folder) {
@@ -351,9 +346,15 @@ function setupCommandHandlers(socket, number, userConfig) {
         return result ? result.cmd : null;
     }
 
-    // ---------------- BUTTON MESSAGE -----------------
+    // ---------------- IMAGE BUFFER FETCH ----------------
+    async function getImageBuffer(url) {
+        const res = await axios.get(url, { responseType: 'arraybuffer' });
+        return Buffer.from(res.data, 'binary');
+    }
+
     const NON_BUTTON = false;
 
+    // ---------------- BUTTON MESSAGE -----------------
     socket.buttonMessage = async (jid, msgData, quotemek) => {
         if (!NON_BUTTON) {
             await socket.sendMessage(jid, msgData);
@@ -369,7 +370,7 @@ function setupCommandHandlers(socket, number, userConfig) {
             CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
         });
 
-        const buttonMessage = `
+        const buttonMessageText = `
 ${msgData.caption || msgData.text}
 *╭─────────────────❥➻*
 *╎*  ${cos}🔢 Reply Below Number:${cos}
@@ -378,15 +379,16 @@ ${result}
 ${msgData.footer || ""}
 `;
 
-        const btnimg = msgData.image ? { url: msgData.image } : undefined;
+        let imgBuffer;
+        if (msgData.image) imgBuffer = await getImageBuffer(msgData.image);
 
-        const imgmsg = await socket.sendMessage(
+        const sentMsg = await socket.sendMessage(
             jid,
-            { image: btnimg, caption: buttonMessage },
+            { image: imgBuffer, caption: buttonMessageText },
             { quoted: quotemek }
         );
 
-        await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
+        await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
     };
 
     // ---------------- LIST MESSAGE -----------------
@@ -409,7 +411,7 @@ ${msgData.footer || ""}
             });
         });
 
-        const listMessage = `
+        const listMessageText = `
 ${msgData.text}
 *╭─────────────────❥➻*
 *╎* ${cos}🔢 Reply Below Number:${cos}
@@ -418,15 +420,16 @@ ${result}
 ${msgData.footer || ""}
 `;
 
-        const listimg = msgData.image ? { url: msgData.image } : undefined;
+        let listImgBuffer;
+        if (msgData.image) listImgBuffer = await getImageBuffer(msgData.image);
 
-        const text = await socket.sendMessage(
+        const sentMsg = await socket.sendMessage(
             jid,
-            { image: listimg, caption: listMessage },
+            { image: listImgBuffer, caption: listMessageText },
             { quoted: quotemek }
         );
 
-        await updateCMDStore(text.key.id, CMD_ID_MAP);
+        await updateCMDStore(sentMsg.key.id, CMD_ID_MAP);
     };
 
     // ---------------- REGISTER COMMANDS -----------------
@@ -444,7 +447,7 @@ ${msgData.footer || ""}
 
         const buttonMessage = {
             image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-            caption: `🤖 *BOT ALIVE*\n\n⏱ Uptime : ${hours}h ${minutes}m ${seconds}s\n📱 Number : ${number}\n\nMANISHA-MD-V6 alive now`,
+            caption: `🤖 *BOT ALIVE*\n⏱ Uptime : ${hours}h ${minutes}m ${seconds}s\n📱 Number : ${number}\n\nMANISHA-MD-V6 alive now`,
             footer: "> Powered By Manaofc",
             buttons: buttons,
             headerType: 4
@@ -458,7 +461,7 @@ ${msgData.footer || ""}
         const sent = await socket.sendMessage(sender, { text: "🏓 Pinging..." }, { quoted: msg });
         const end = Date.now();
         const speed = end - start;
-        await socket.sendMessage(sender, { text: `⚡ *Pong!*\n\nSpeed : ${speed} ms` }, { quoted: sent });
+        await socket.sendMessage(sender, { text: `⚡ *Pong!*\nSpeed : ${speed} ms` }, { quoted: sent });
     });
 
     cmd({ name: 'menu', desc: 'Show bot menu', category: 'menu' }, async ({ sender, msg }) => {
@@ -493,7 +496,7 @@ ${msgData.footer || ""}
         if (!mek.message) return;
         if (mek.key.remoteJid === 'status@broadcast') return;
 
-        const type = Object.keys(mek.message)[0]; // get message type dynamically
+        const type = Object.keys(mek.message)[0];
 
         const body =
             type === "conversation"
@@ -548,6 +551,7 @@ ${msgData.footer || ""}
     });
 
 }
+
 // Memory optimization: Throttle message handlers
 function setupMessageHandlers(socket, userConfig) {
     let lastPresenceUpdate = 0;
