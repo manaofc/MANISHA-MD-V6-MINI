@@ -21,6 +21,7 @@
     "yt-search": "latest",
     "path": "latest",
     "axios": "latest",
+    "os": "latest",
     "moment-timezone": "latest"
   }
 }
