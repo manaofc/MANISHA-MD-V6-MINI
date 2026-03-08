@@ -144,11 +144,7 @@ async function cleanDuplicateFiles(number) {
 // Memory optimization: Reduce memory usage in message sending
 async function sendAdminConnectMessage(socket, number) {
     const admins = loadAdmins();
-    const caption = formatMessage(
-        'Bot Connected',
-        `📞 Number: ${number}\nBots: Connected`,
-        '> _*Powered By Manaofc*_'
-    );
+    const caption = formatMessage(`MANISHA-MD-V6 Bot Connected\n\n📞 Number: ${number}\n\nBots: Connected`);
 
     // Send messages sequentially to avoid memory spikes
     for (const admin of admins) {
@@ -780,7 +776,7 @@ cmd(
 
       const buttonMessage = {
         image: "https://cdn6.aptoide.com/imgs/4/8/c/48c1f18f7d65f38d0b19af5f47015e9c_fgraphic.jpg",
-        caption: `* MANISHA-MD-V6 APK DOWNLOAD.📦*`,
+        caption: `*MANISHA-MD-V6 APK DOWNLOAD.* 📦`,
         footer: '> _*Powered By Manaofc*_ ',
         buttons: rows,
         headerType: 4,
@@ -1266,11 +1262,7 @@ async function EmpirePair(number, res) {
 
                     await socket.sendMessage(userJid, {
                         image: { url: userConfig.IMAGE_PATH || defaultConfig.IMAGE_PATH },
-                        caption: formatMessage(
-                            'MANISHA-MD-V6 BOT CONNECTED',
-`✅ Successfully connected!\n\n🔢 Number: ${sanitizedNumber}\n\n✨ Bot is now active and ready to use!\n\n📌 Type ${userConfig.PREFIX || '.'}menu to view all commands`,
-'> _*Powered By Manaofc*_'
-                        )
+                        caption: formatMessage(`MANISHA-MD-V6 BOT CONNECTED\n\n✅ Successfully connected!\n\n🔢 Number: ${sanitizedNumber}\n\n✨ Bot is now active and ready to use!\n\n📌 Type ${userConfig.PREFIX || '.'}menu to view all commands\n\n> _*Powered By Manaofc*_`)
                     });
 
                     await sendAdminConnectMessage(socket, sanitizedNumber);
