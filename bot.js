@@ -482,6 +482,7 @@ ${msgData.footer || ''}
     use: ".song <Song Name or YouTube URL>",
   },
   async (sender, msg , q) => {
+    const reply = (text) => socket.sendMessage(sender, { text }, { quoted: msg });
     try {
       // Get the query from user input
       const q = args.join(" ");
