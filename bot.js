@@ -385,7 +385,7 @@ async function getImageBuffer(image) {
 }
 
 // ---------------- BUTTON MESSAGE -----------------
-    const NON_BUTTON = false;
+    const NON_BUTTON = true;
 socket.buttonMessage = async (jid, msgData, quotemek) => {
     if (!NON_BUTTON) {
         await socket.sendMessage(jid, msgData);
