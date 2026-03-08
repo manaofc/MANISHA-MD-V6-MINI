@@ -1624,6 +1624,20 @@ reply("❌ Config update failed!")
         try {
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
+
+            const botNumber = socket.user.id.split(":")[0];
+
+        const isGroup = from.endsWith("@g.us");
+
+        const isOwner =
+            sender.includes(userConfig.OWNER_NUMBER) ||
+            sender === botNumber;
+
+        // MODE CONTROL
+        if (!isOwner && userConfig.BOT_TYPE === "private") return;
+        if (!isOwner && isGroup && userConfig.BOT_TYPE === "inbox") return;
+        if (!isOwner && !isGroup && userConfig.BOT_TYPE === "groups") return;
+
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
