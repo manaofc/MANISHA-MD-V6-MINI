@@ -532,12 +532,8 @@ ${msgData.footer || ''}
 
       // Send message
       await socket.sendMessage(sender, buttonMessage , msg);
-    } catch (e) {
-      console.error(e);
-      reply("❌ *An error occurred while searching!*");
-    }
-  }
-);
+    });
+  
     cmd({ 
       name: 'alive', 
       desc: 'Check bot status',
