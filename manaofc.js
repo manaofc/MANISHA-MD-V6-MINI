@@ -1621,17 +1621,18 @@ reply("❌ Config update failed!")
         if (!mek.message || mek.key.remoteJid === "status@broadcast") return;
 
         try {
-            const type = getContentType(mek.message);
-            const from = mek.key?.remoteJid; // Optional chaining to avoid errors
-            const sender = mek.key?.participant || from;
-            const isGroup = from?.endsWith("@g.us"); // Optional chaining
-            const isOwner = defaultConfig.OWNER_NUMBER.includes(sanitizedNumber(sender)); // fixed function name
-            // MODE CONTROL
-            if(!isOwner && defaultConfig.BOT_TYPE === "private") return;
-            if(!isOwner && isGroup && defaultConfig.BOT_TYPE === "inbox") return;
-            if(!isOwner && !isGroup && defaultConfig.BOT_TYPE === "groups") return;
+          const type = getContentType(mek.message);
+          const from = mek.key?.remoteJid; // Optional chaining to avoid errors
+           // Use let instead of const to avoid redeclaration issues
+          let sender = mek.key?.participant || from;
 
+          const isGroup = from?.endsWith("@g.us"); // Check if it's a group
+          const isOwner = defaultConfig.OWNER_NUMBER.includes(sanitizedNumber(sender)); // Check if sender is owner
 
+           // MODE CONTROL
+          if (!isOwner && defaultConfig.BOT_TYPE === "private") return;
+          if (!isOwner && isGroup && defaultConfig.BOT_TYPE === "inbox") return;
+          if (!isOwner && !isGroup && defaultConfig.BOT_TYPE === "groups") return;
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
