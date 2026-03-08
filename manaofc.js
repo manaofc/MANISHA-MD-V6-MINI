@@ -1,5 +1,5 @@
 const axios = require('axios');
-const yts = require("yt-search");
+const yts = require('yt-search');
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
@@ -8,11 +8,11 @@ const router = express.Router();
 const pino = require('pino');
 const { Octokit } = require('@octokit/rest');
 const moment = require('moment-timezone');
-const { File } = require("megajs");
+const { File } = require('megajs');
 const apkdl = require('./lib/apkdl');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const cheerio = require("cheerio");
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require("./lib/functions");
+const cheerio = require('cheerio');
+const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require('./lib/functions');
 
 const {
   default: makeWASocket,
@@ -32,7 +32,7 @@ const {
   generateForwardMessageContent,
   proto,
   delay
-} = require("baileys");
+} = require('baileys');
 
 
 // Default config structure
