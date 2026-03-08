@@ -286,6 +286,32 @@ function cmd(info, func) {
 
 const cos = '```';
 
+function ensureFolder(folder) {
+  const folderPath = path.join(basePath, folder);
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath);
+  }
+}
+
+// Helper: read JSON
+function readJSON(folder, file, defaultData = []) {
+  ensureFolder(folder);
+  const filePath = path.join(basePath, folder, file);
+
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
+// Helper: write JSON
+function writeJSON(folder, file, data) {
+  ensureFolder(folder);
+  const filePath = path.join(basePath, folder, file);
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
 
 // ---------------- CMD STORE ----------------
 
