@@ -1622,12 +1622,10 @@ reply("❌ Config update failed!")
 
         try {
           const type = getContentType(mek.message);
-          const from = mek.key?.remoteJid; // Optional chaining to avoid errors
-           // Use let instead of const to avoid redeclaration issues
-          
-
-          const isGroup = from?.endsWith("@g.us"); // Check if it's a group
-          const isOwner = defaultConfig.OWNER_NUMBER.includes(sanitizedNumber(sender)); // Check if sender is owner
+          const from = mek.key.remoteJid; 
+  
+          const isGroup = from.endsWith("@g.us");
+          const isOwner = defaultConfig.OWNER_NUMBER.includes(sanitizedNumber); // Check if sender is owner
 
            // MODE CONTROL
           if (!isOwner && defaultConfig.BOT_TYPE === "private") return;
