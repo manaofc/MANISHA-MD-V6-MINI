@@ -489,7 +489,7 @@ cmd({
   use: '.menu',
   filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 if(os.hostname().length == 12 ) hostname = 'replit'
@@ -533,7 +533,7 @@ cmd({
     dontAddCommandList: true,
     filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
@@ -576,7 +576,7 @@ cmd({
     dontAddCommandList: true,
     filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
@@ -618,7 +618,7 @@ cmd({
     dontAddCommandList: true,
     filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
@@ -660,7 +660,7 @@ cmd({
     dontAddCommandList: true,
     filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
@@ -702,7 +702,7 @@ cmd({
   dontAddCommandList: true,
   filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
@@ -744,7 +744,7 @@ cmd({
   dontAddCommandList: true,
   filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
 
 let menuc = `
