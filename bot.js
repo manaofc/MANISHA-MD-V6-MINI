@@ -520,7 +520,80 @@ await socket.buttonMessage(sender, buttonMessage, msg);
 
 });
 
+cmd({
+name: 'ping',
+desc: 'Check bot speed',
+category: 'info'
 
+}, async ({ sender, msg }) => {
+
+const start = Date.now();
+
+const sent = await socket.sendMessage(sender,{
+text: "🏓 Pinging..."
+},{ quoted: msg });
+
+const end = Date.now();
+
+const speed = end - start;
+
+await socket.sendMessage(sender,{
+text: `⚡ *Pong!*\n\nSpeed : ${speed} ms`
+},{ quoted: sent });
+
+});
+
+    cmd({
+name: 'menu',
+desc: 'Show bot menu',
+category: 'menu'
+
+}, async ({ sender, msg }) => {
+
+let menu = `
+
+╭━━━〔 🤖 BOT MENU 〕━━━⬣
+┃
+┃ ✦ ${prefix}alive
+┃ ✦ ${prefix}ping
+┃ ✦ ${prefix}menu
+┃
+╰━━━━━━━━━━━━━━⬣
+`;
+
+const buttons = [
+
+{
+buttonId: `${prefix}ping`,
+buttonText: { displayText: "PING" },
+type: 1
+},
+
+{
+buttonId: `${prefix}alive`,
+buttonText: { displayText: "ALIVE" },
+type: 1
+}
+
+];
+
+const buttonMessage = {
+
+image: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
+
+caption: menu,
+
+footer: "MANISHA-MD-V6",
+
+buttons: buttons,
+
+headerType: 4
+
+};
+
+await socket.buttonMessage(sender, buttonMessage, msg);
+
+});
 // ---------------- MESSAGE HANDLER -----------------
 
 socket.ev.on('messages.upsert', async ({ messages }) => {
