@@ -425,7 +425,7 @@ ${result}
 ${msgData.footer}`;
 
           const text = await socket.sendMessage(
-            from,
+            jid,
             { image: listimg, caption: listMessage },
             { quoted: quotemek || mek }
           );
