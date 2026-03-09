@@ -1659,9 +1659,6 @@ cmd(
   },
  async(socket, mek, m, { from, prefix, q, reply }) => {
   try {
-  
-      if (!q) return reply("🚫 *use this command!*");
-
       const sections = [
         {
           title: "🔧 WORK TYPE",
