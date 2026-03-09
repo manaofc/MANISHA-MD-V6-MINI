@@ -1738,7 +1738,7 @@ reply("❌ Config update failed!")
               react: { text: cmdObj.react, key: mek.key }
             });
           }
-            await cmdObj.function(socket, mek, mek, { from, prefix, isOwner, isGroup, q, args, reply });
+            await cmdObj.function(socket, mek, mek, { from, prefix, q, args, reply });
 
         } catch (error) {
             console.error("Command handler error:", error);
