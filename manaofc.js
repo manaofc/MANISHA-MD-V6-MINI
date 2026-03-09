@@ -47,7 +47,7 @@ const defaultConfig = {
     WORK_TYPE: 'private',
     ADMIN_LIST_PATH: './admin.json',
     IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-    OWNER_NUMBER: '94759934522'
+    OWNER_NUMBER: '94721551183'
 };
 
 // GitHub Octokit initialization
@@ -252,7 +252,7 @@ async function downloadAndSaveMedia(message, mediaType) {
 }
 //////////////
 const isOwner = (jid) => {
-    return jid === userConfig.OWNER_NUMBER;
+    return jid === defaultConfig.OWNER_NUMBER;
 };
 //////////////
 
@@ -1689,11 +1689,11 @@ reply("❌ Config update failed!")
        /////////////////////////
           const sender = mek.key.participant || from;
            const isGroup = from.endsWith("@g.us");
-          if (userConfig.WORK_TYPE === "private" && !isOwner(sender)) {
+          if (defaultConfig.WORK_TYPE === "private" && !isOwner(sender)) {
             return;
         }
 
-        if (userConfig.WORK_TYPE === "group" && !isGroup) {
+        if (defaultConfig.WORK_TYPE === "group" && !isGroup) {
             return;
         }
      ///////////////////////// 
