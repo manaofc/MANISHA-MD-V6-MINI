@@ -250,12 +250,6 @@ async function downloadAndSaveMedia(message, mediaType) {
         throw error;
     }
 }
-//////////////
-const isOwner = (jid) => {
-    return jid === defaultConfig.OWNER_NUMBER;
-};
-//////////////
-
 // Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
     const commandCooldowns = new Map();
@@ -1688,16 +1682,7 @@ reply("❌ Config update failed!")
           const from = mek.key.remoteJid; 
        /////////////////////////
           const sender = mek.key.participant || from;
-           const isGroup = from.endsWith("@g.us");
-          if (defaultConfig.WORK_TYPE === "private" && !isOwner(sender)) {
-            return;
-        }
-
-        if (defaultConfig.WORK_TYPE === "group" && !isGroup) {
-            return;
-        }
-     ///////////////////////// 
-            
+          /////////////////
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
