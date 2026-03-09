@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Aimlock</title>
+<style>
+  @import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+
+  body {
+    margin: 0;
+    font-family: 'SF Pro Display', sans-serif;
+    background: linear-gradient(135deg, #0d0d0f 0%, #1a1a20 50%, #0d0d0f 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel {
+    width: 95%;
+    max-width: 420px;
+    background: linear-gradient(160deg, rgba(255,79,216,0.15), rgba(0,200,255,0.15));
+    border: 1px solid rgba(255, 79, 216, 0.5);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 0 30px rgba(255, 79, 216, 0.4);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease;
+  }
+
+  .title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ff4fd8, #00c8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 25px;
+  }
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(20,20,25,0.7);
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .3s ease;
+    position: relative;
+  }
+  input[type="checkbox"] {
+    accent-color: #ff4fd8;
+    width: 18px;
+    height: 18px;
+  }
+  .success-msg {
+    color: #00ff90;
+    font-size: 12px;
+    position: absolute;
+    right: 10px;
+    opacity: 0;
+    transition: opacity .3s ease;
+  }
+  .success-msg.active {
+    opacity: 1;
+  }
+
+  .slider-box {
+    margin: 20px 0;
+    text-align: center;
+    font-size: 15px;
+  }
+  .slider-box span {
+    background: linear-gradient(90deg, #ff4fd8, #00c8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+  }
+  input[type="range"] {
+    width: 100%;
+    margin-top: 12px;
+    accent-color: #ff4fd8;
+  }
+
+  select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(20,20,25,0.8);
+    color: #fff;
+    margin-bottom: 25px;
+    font-size: 14px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(90deg, #ff4fd8, #00c8ff);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255,79,216,0.5);
+    transition: all .3s ease;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255,79,216,0.8);
+  }
+
+  /* Modal Injection */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .modal.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal-box {
+    background: #111;
+    border: 1px solid #ff4fd8;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(255,79,216,0.6);
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+  }
+  .codes {
+    font-family: monospace;
+    font-size: 12px;
+    color: #0f0;
+    height: 120px;
+    overflow-y: auto;
+    text-align: left;
+    background: #000;
+    padding: 8px;
+    margin-bottom: 15px;
+  }
+  .progress {
+    width: 100%;
+    height: 12px;
+    border-radius: 8px;
+    background: #222;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff4fd8, #00c8ff);
+    transition: width .2s;
+  }
+  .modal-success {
+    display: none;
+    color: #00ff90;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="title">  PANEL iPHONE 2026  </div>
+    
+    <div class="checkbox-group">
+      <label><input type="checkbox"> AIMBOT 90% 🔫 <span class="success-msg">✅</span></label>
+      <label><input type="checkbox"> HEADTRICK⚙️ <span class="success-msg">✅</span></label>
+      <label><input type="checkbox"> Anti-BANEO💯 <span class="success-msg">✅</span></label>
+      <label><input type="checkbox"> Anti-BLACK LIST🚫<span class="success-msg">✅</span></label>
+    </div>
+
+    <div class="slider-box">
+      AUTO APUNTADO🎯: [ <span id="precisaoVal">15.5</span> ] 
+      <input type="range" id="precisao" min="0" max="100" step="0.5" value="15.5">
+    </div>
+
+    <select>
+      <option value="cabeca">AUTO HEAD 50%</option>
+      <option value="pescoco">AUTO HEAD 72%</option>
+      <option value="peito">AUTO HEAD 98%</option>
+    </select>
+
+    <button class="btn" id="injectBtn">🟩ACTIVAR 🟩</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="codes" id="codes"></div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="modal-success">🟩AUTO APUNTADO ACTIVADO CON EXITO🟩</div>
+    </div>
+  </div>
+
+<script>
+  // Slider
+  const slider = document.getElementById("precisao");
+  const val = document.getElementById("precisaoVal");
+  slider.addEventListener("input", () => {
+    val.textContent = slider.value;
+  });
+
+  // Checkbox sucesso
+  document.querySelectorAll(".checkbox-group input").forEach(cb=>{
+    cb.addEventListener("change", e=>{
+      const msg = e.target.parentElement.querySelector(".success-msg");
+      if(e.target.checked){
+        msg.classList.add("active");
+      } else {
+        msg.classList.remove("active");
+      }
+    });
+  });
+
+  // Modal Injection
+  const injectBtn = document.getElementById("injectBtn");
+  const modal = document.getElementById("modal");
+  const codes = document.getElementById("codes");
+  const progressBar = document.getElementById("progressBar");
+  const successMsg = document.querySelector(".modal-success");
+
+  injectBtn.addEventListener("click", ()=>{
+    modal.classList.add("active");
+    codes.textContent = "";
+    successMsg.style.display = "none";
+    progressBar.style.width = "0%";
+
+    // gerar códigos fake
+    let lines = 0;
+    const codeInterval = setInterval(()=>{
+      lines++;
+      codes.textContent += "> " + Math.random().toString(36).substring(2,15) + "\n";
+      codes.scrollTop = codes.scrollHeight;
+      if(lines > 20) clearInterval(codeInterval);
+    },100);
+
+    // barra de progresso
+    let percent = 0;
+    const progressInterval = setInterval(()=>{
+      percent+=5;
+      progressBar.style.width = percent+"%";
+      if(percent>=100){
+        clearInterval(progressInterval);
+        successMsg.style.display = "block";
+
+        // simulação de voz
+        const utter = new SpeechSynthesisUtterance("Painel ativado com sucesso");
+        utter.lang = "pt-BR";
+        speechSynthesis.speak(utter);
+      }
+    },200);
+  });
+
+  // fechar modal clicando fora
+  modal.addEventListener("click", e=>{
+    if(e.target===modal) modal.classList.remove("active");
+  });
+</script>
+</body>
+</html>
