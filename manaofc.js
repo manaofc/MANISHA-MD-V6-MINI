@@ -1686,10 +1686,9 @@ reply("❌ Config update failed!")
           const botNumber = socket.user.id.split(":")[0];
           const ownerNumber = defaultConfig.OWNER_NUMBER || botNumber;
           const isOwner = sender.includes(ownerNumber);
-          if(!isOwner && defaultConfig.WORK_TYPE === "private") return
-          if(!isOwner && isGroup && defaultConfig.WORK_TYPE === "inbox") return
-          if(!isOwner && !isGroup && defaultConfig.WORK_TYPE === "groups") return
-          
+          if (defaultConfig.WORK_TYPE === "private" && !isOwner) return;
+          if (defaultConfig.WORK_TYPE === "inbox" && isGroup && !isOwner) return;
+          if (defaultConfig.WORK_TYPE === "groups" && !isGroup && !isOwner) return;
           /////////////////
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
