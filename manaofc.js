@@ -1687,6 +1687,7 @@ reply("❌ Config update failed!")
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
        /////////////////////////
+          const sender = mek.key.participant || from;
            const isGroup = from.endsWith("@g.us");
           if (userConfig.WORK_TYPE === "private" && !isOwner(sender)) {
             return;
@@ -1733,7 +1734,7 @@ reply("❌ Config update failed!")
             };
 
             // Rate limiting
-            const sender = mek.key.participant || from;
+            //const sender = mek.key.participant || from;
             const now = Date.now();
             if (commandCooldowns.has(sender)) {
                 const diff = now - commandCooldowns.get(sender);
