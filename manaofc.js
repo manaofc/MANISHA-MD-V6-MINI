@@ -1641,7 +1641,46 @@ async (socket, mek, m, { from, reply }) => {
 
     }
 });
+              ///////////////////
+////////////// SETTINGS COMMAND ////////////////
+            ////////////////////
 
+cmd({
+  pattern: "settings",
+  react: "⚙️",
+  alias: ["config"],
+  desc: "Bot settings menu",
+  category: "settings",
+  use: '.settings',
+  filename: __filename
+},
+async (socket, mek, m, { from, prefix, reply }) => {
+  try {
+
+    const buttons = [
+      { buttonId: prefix + 'set PREFIX .', buttonText: { displayText: 'Prefix .' }, type: 1 },
+      { buttonId: prefix + 'set PREFIX /', buttonText: { displayText: 'Prefix /' }, type: 1 },
+      { buttonId: prefix + 'set PREFIX ?', buttonText: { displayText: 'Prefix ?' }, type: 1 },
+      { buttonId: prefix + 'set PREFIX #', buttonText: { displayText: 'Prefix #' }, type: 1 },
+      { buttonId: prefix + 'menu', buttonText: { displayText: '📜 Others Menu' }, type: 1 }
+    ];
+
+    const buttonMessage = {
+      image: defaultConfig.IMAGE_PATH,
+      caption: "*⚙️ BOT SETTINGS PANEL*",
+      footer: "> _Powered By Manaofc_",
+      buttons: buttons,
+      headerType: 4
+    };
+
+    await socket.buttonMessage(from, buttonMessage, mek);
+
+  } catch (e) {
+    reply('*Error !!*');
+    console.log(e);
+  }
+});
+  
 cmd({
 pattern: "set",
 dontAddCommandList: true,
