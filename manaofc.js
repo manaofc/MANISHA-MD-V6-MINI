@@ -1330,94 +1330,115 @@ async function GDriveDl(url) {
   if (!url || !url.match(/drive\.google/i)) return res;
 
   try {
-    if (id = (url.match(/\/?id=(.+)/i) || url.match(/\/d\/(.*?)\//))[1], !id) throw "ID Not Found";
 
-    // Fetch file metadata from Google Drive API
-    res = await fetch(`https://drive.google.com/uc?id=${id}&authuser=0&export=download`, {
-      method: "post",
+    const match = url.match(/[-\w]{25,}/);
+    if (!match) throw "ID Not Found";
+
+    id = match[0];
+
+    const response = await fetch(`https://drive.google.com/uc?id=${id}&export=download`, {
+      method: "POST",
       headers: {
         "accept-encoding": "gzip, deflate, br",
         "content-length": 0,
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         origin: "https://drive.google.com",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
-        "x-client-data": "CKG1yQEIkbbJAQiitskBCMS2yQEIqZ3KAQioo8oBGLeYygE=",
-        "x-drive-first-party": "DriveWebUi",
+        "user-agent": "Mozilla/5.0",
         "x-json-requested": "true"
       }
     });
 
-    let { fileName, sizeBytes, downloadUrl } = JSON.parse((await res.text()).slice(4));
+    let json;
 
-    if (!downloadUrl) throw "Link Download Limit!";
+    try {
+      json = JSON.parse((await response.text()).slice(4));
+    } catch {
+      return { error: true };
+    }
 
-    let data = await fetch(downloadUrl);
+    let { fileName, sizeBytes, downloadUrl } = json;
 
-    return 200 !== data.status ? data.statusText : {
+    if (!downloadUrl) throw "Download link not available";
+
+    const head = await fetch(downloadUrl);
+
+    return {
       downloadUrl: downloadUrl,
-      fileName: fileName,
+      fileName: fileName || "file",
       fileSize: formatBytes(sizeBytes),
-      fileSizeb: sizeBytes,
-      mimetype: data.headers.get("content-type")
+      fileSizeb: Number(sizeBytes) || 0,
+      mimetype: head.headers.get("content-type") || "application/octet-stream",
+      error: false
     };
 
   } catch (e) {
-    console.log(e); // Log any error
-    return res; // Return the error response
+    console.log(e);
+    return { error: true };
   }
 }
 
-// Google Drive command to handle file download
 cmd({
   pattern: "gdrive",
   alias: ["googledrive"],
-  react: '📁',
+  react: "📁",
   desc: "Download Google Drive files.",
   category: "download",
-  use: '.gdrive *<GoogleDrive URL>*',
+  use: ".gdrive <url>",
   filename: __filename
 },
-async(socket, mek, m, { from, q, reply }) => {
+async (socket, mek, m, { from, q, reply }) => {
+
   try {
-    const [data] = q.split("±");
-    if (!data) return await reply('*Please provide a Google Drive URL!*');
 
-    let res = await GDriveDl(data);
+    if (!q) return reply("*Please provide a Google Drive URL!*");
 
-    if (res.error) return await reply("Failed to fetch the file or the file is not available.");
+    let res = await GDriveDl(q);
 
-    let mimetype = res.mimetype;
-    const fileExtension = path.extname(res.fileName).toLowerCase();
-    mimetype = mimeTypes[fileExtension] || mimetype || "application/octet-stream";
-
-    if (res.fileSizeb > maxSize) {
-      return await socket.sendMessage(from, { text: '🚩 *File size is too big...*' }, { quoted: mek });
+    if (!res || res.error) {
+      return reply("*Failed to fetch the file. Make sure the file is public.*");
     }
 
-    const response = await axios.get(res.downloadUrl, { responseType: "arraybuffer" });
-    const mediaBuffer = Buffer.from(response.data, "binary");
+    const fileName = res.fileName || "file";
+    const fileExtension = path.extname(fileName).toLowerCase();
 
-    const caption = `*◈ File name:*  ${res.fileName}
+    let mimetype = mimeTypes[fileExtension] || res.mimetype || "application/octet-stream";
+
+    if (res.fileSizeb > maxSize) {
+      return socket.sendMessage(from,{
+        text:"🚩 *File size is too big (Max 4GB)*"
+      },{ quoted: mek });
+    }
+
+    const response = await axios.get(res.downloadUrl,{
+      responseType:"arraybuffer"
+    });
+
+    const mediaBuffer = Buffer.from(response.data);
+
+    const caption =
+`*◈ File name:* ${fileName}
 *◈ File Size:* ${res.fileSize}
 *◈ File type:* ${mimetype}
 
-> _*Powered By Manaofc*_`;
+> _Powered By Manaofc_`;
 
-    const message = {
+    await socket.sendMessage(from,{
       document: mediaBuffer,
       mimetype: mimetype,
-      fileName: res.fileName,
-      caption: caption,
-    };
-
-    await socket.sendMessage(from, message, { quoted: mek });
+      fileName: fileName,
+      caption: caption
+    },{ quoted: mek });
 
   } catch (e) {
-    console.log(e); // Log the error
-    reply(`${e}`); // Send the error message to the user
-  }
-});
 
+    console.log(e);
+
+    reply("*Error:* " + e);
+
+  }
+
+});
+  
 // MediaFire command to handle file download
 async function mfire(url) {
   try {
