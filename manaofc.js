@@ -1682,14 +1682,6 @@ reply("❌ Config update failed!")
           const from = mek.key.remoteJid; 
           const sender = mek.key.participant || from;
           /////////////////////////
-          const isGroup = from.endsWith("@g.us");
-          const botNumber = socket.user.id.split(":")[0];
-          const ownerNumber = defaultConfig.OWNER_NUMBER || botNumber;
-          const isOwner = sender.includes(ownerNumber);
-          if (defaultConfig.WORK_TYPE === "private" && !isOwner) return;
-          if (defaultConfig.WORK_TYPE === "inbox" && isGroup && !isOwner) return;
-          if (defaultConfig.WORK_TYPE === "groups" && !isGroup && !isOwner) return;
-          /////////////////
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
                 type === "conversation"
@@ -1726,7 +1718,7 @@ reply("❌ Config update failed!")
             };
 
             // Rate limiting
-            //const sender = mek.key.participant || from;
+            //sender එක මෙතනට ඇඩ් කරන්න
             const now = Date.now();
             if (commandCooldowns.has(sender)) {
                 const diff = now - commandCooldowns.get(sender);
