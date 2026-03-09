@@ -403,14 +403,16 @@ const CMD_ID_MAP = [];
 msgData.sections.forEach((section, sectionIndex) => {
 
 const mainNumber = `${sectionIndex + 1}`;
-
+ 
 result += `\n*${mainNumber} :* ${section.title}\n`;
 
 section.rows.forEach((row, rowIndex) => {
-
+              
 const subNumber = `${mainNumber}.${rowIndex + 1}`;
-
-result += `◦ ${subNumber} - ${row.title}\n`;
+              
+const rowHeader = `◦  ${subNumber} - ${row.title}`;
+              
+result += `${rowHeader}\n`;
 
 CMD_ID_MAP.push({
 cmdId: subNumber,
