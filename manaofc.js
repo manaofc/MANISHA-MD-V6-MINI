@@ -1681,7 +1681,17 @@ reply("❌ Config update failed!")
           const type = getContentType(mek.message);
           const from = mek.key.remoteJid; 
        /////////////////////////
+          
           const sender = mek.key.participant || from;
+          const isGroup = from.endsWith("@g.us");
+          const botNumber = conn.user.id.split(":")[0];
+          const isOwner = defaultConfig.OWNER_NUMBER || botNumber;
+          if (defaultConfig.WORK_TYPE === "group") {
+          if (!isGroup && !isOwner) return
+          }
+          if (defaultConfig.WORK_TYPE === "private") {
+            if (isGroup && !isOwner) return
+          }
           /////////////////
             // === BODY EXTRACTION WITH QUOTED BUTTON SUPPORT ===
             const body =
