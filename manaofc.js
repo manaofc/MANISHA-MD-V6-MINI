@@ -1652,7 +1652,7 @@ cmd(
     pattern: "settings",
     react: "⚙️",
     alias: ["setting", "botsetting"],
-    desc: desc2,
+    desc: "bot settings chnge",
     category: "owner",
     use: ".settings - *Bot Settings*",
     filename: __filename,
