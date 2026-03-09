@@ -431,7 +431,7 @@ ${msgData.footer || ""}
 
         const listimg = msgData.image ? { url: msgData.image } : undefined;
 
-        const text = await socket.sendMessage(
+        const imgmsg = await socket.sendMessage(
             jid,
             { image: listimg, caption: listMessageText },
             { quoted: quotemek }
