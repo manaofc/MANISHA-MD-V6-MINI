@@ -250,6 +250,11 @@ async function downloadAndSaveMedia(message, mediaType) {
         throw error;
     }
 }
+//////////////
+const isOwner = (jid) => {
+    return jid === userConfig.OWNER_NUMBER;
+};
+//////////////
 
 // Setup command handlers for a single socket/session
 function setupCommandHandlers(socket, number, userConfig) {
