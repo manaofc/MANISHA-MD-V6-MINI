@@ -392,62 +392,53 @@ await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
 // ---------------- LIST MESSAGE -----------------
 
 socket.listMessage = async (jid, msgData, quotemek) => {
+    const cos = "🔢"; // fix the undefined variable issue
 
-if (!NON_BUTTON) {
-          await conn.sendMessage(jid, msgData);
-        } else {
+    if (!NON_BUTTON) {
+        await conn.sendMessage(jid, msgData);
+    } else {
+        let result = "";
+        const CMD_ID_MAP = [];
 
-let result = "";
-const CMD_ID_MAP = [];
+        if (!msgData.sections || !Array.isArray(msgData.sections)) {
+            console.error("msgData.sections missing or invalid");
+            return;
+        }
 
-msgData.sections.forEach((section, sectionIndex) => {
+        msgData.sections.forEach((section, sectionIndex) => {
+            const mainNumber = `${sectionIndex + 1}`;
+            result += `\n*${mainNumber} :* ${section.title}\n`;
 
-const mainNumber = `${sectionIndex + 1}`;
- 
-result += `\n*${mainNumber} :* ${section.title}\n`;
+            section.rows.forEach((row, rowIndex) => {
+                const subNumber = `${mainNumber}.${rowIndex + 1}`;
+                result += `◦  ${subNumber} - ${row.title}\n`;
 
-section.rows.forEach((row, rowIndex) => {
-              
-const subNumber = `${mainNumber}.${rowIndex + 1}`;
-              
-const rowHeader = `◦  ${subNumber} - ${row.title}`;
-              
-result += `${rowHeader}\n`;
+                CMD_ID_MAP.push({
+                    cmdId: subNumber,
+                    cmd: row.rowId
+                });
+            });
+        });
 
-CMD_ID_MAP.push({
-cmdId: subNumber,
-cmd: row.rowId
-});
-
-});
-
-});
-
-const listMessage = `
-
-${msgData.text}
-
+        const listMessageText = `
+${msgData.text || ""}
 *╭─────────────────❥➻*
-*╎* ${cos}🔢 Reply Below Number:${cos}
+*╎* ${cos} Reply Below Number: ${cos}
 *╰─────────────────❥➻*
-
 ${result}
-
 ${msgData.footer || ""}
 `;
 
-const listimg = msgData.image
-? { url: msgData.image }
-: undefined;
+        const listimg = msgData.image ? { url: msgData.image } : undefined;
 
-const text = await socket.sendMessage(
-jid,
-{ image: listimg, caption: listMessage },
-{ quoted: quotemek }
-);
+        const text = await socket.sendMessage(
+            jid,
+            { image: listimg, caption: listMessageText },
+            { quoted: quotemek }
+        );
 
-await updateCMDStore(text.key.id, CMD_ID_MAP);
-}
+        await updateCMDStore(text.key.id, CMD_ID_MAP);
+    }
 };
 ////////////////////////////////////////
 //////////// ( COMMAND ADD ) ///////////
