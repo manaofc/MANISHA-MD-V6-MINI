@@ -27,8 +27,6 @@ color:white;
 overflow-x:hidden;
 }
 
-/* PARTICLES */
-
 #particles{
 position:fixed;
 top:0;
@@ -37,8 +35,6 @@ width:100%;
 height:100%;
 z-index:-1;
 }
-
-/* NAVBAR */
 
 nav{
 display:flex;
@@ -80,8 +76,6 @@ color:#b388ff;
 color:#e0aaff;
 }
 
-/* HERO */
-
 .hero-section{
 text-align:center;
 padding:80px 20px;
@@ -106,8 +100,6 @@ color:#b388ff;
 font-size:18px;
 }
 
-/* CARD */
-
 .card{
 background:rgba(20,10,40,0.7);
 border-radius:20px;
@@ -118,8 +110,6 @@ border:1px solid rgba(200,150,255,0.2);
 box-shadow:0 0 30px rgba(170,80,255,0.3);
 backdrop-filter:blur(15px);
 }
-
-/* FEATURES */
 
 .feature-grid{
 display:grid;
@@ -146,8 +136,6 @@ font-size:40px;
 margin-bottom:15px;
 color:#c77dff;
 }
-
-/* INPUT */
 
 .input-box{
 display:flex;
@@ -177,8 +165,6 @@ background:#12082d;
 color:white;
 }
 
-/* BUTTON */
-
 .btn{
 padding:12px 20px;
 border:none;
@@ -196,15 +182,17 @@ color:white;
 box-shadow:0 0 20px rgba(180,120,255,0.7);
 }
 
-/* RESULT */
-
 #pair{
 margin-top:25px;
 text-align:center;
 font-size:22px;
 }
 
-/* MODAL */
+.copy-btn{
+margin-top:10px;
+background:#7b2cbf;
+color:white;
+}
 
 .modal{
 display:flex;
@@ -243,8 +231,6 @@ color:#b388ff;
 
 <div id="particles"></div>
 
-<!-- MODAL -->
-
 <div id="welcomeModal" class="modal">
 <div class="modal-content">
 
@@ -260,8 +246,6 @@ Continue
 
 </div>
 </div>
-
-<!-- NAV -->
 
 <nav>
 
@@ -359,17 +343,11 @@ Generate Pairing Code
 
 <script>
 
-/* YEAR */
-
 document.getElementById("year").innerText=new Date().getFullYear()
-
-/* MODAL */
 
 document.getElementById("continueBtn").onclick=()=>{
 document.getElementById("welcomeModal").style.display="none"
 }
-
-/* PAIR CODE */
 
 const btn=document.getElementById("requestPairing")
 const number=document.getElementById("phone")
@@ -392,7 +370,11 @@ let res=await axios(`/code?number=${num}`)
 
 let code=res.data.code
 
-pair.innerHTML=`<h2 style="color:#e0aaff">CODE : ${code}</h2>`
+pair.innerHTML=`
+<h2 id="codeText" style="color:#e0aaff">CODE : ${code}</h2>
+<button class="btn copy-btn" onclick="copyCode()">📋 Copy Code</button>
+<p id="copyMsg"></p>
+`
 
 }catch{
 
@@ -402,7 +384,15 @@ pair.innerHTML="<span style='color:red'>Server Error</span>"
 
 }
 
-/* PARTICLES */
+function copyCode(){
+
+let text=document.getElementById("codeText").innerText.replace("CODE : ","")
+
+navigator.clipboard.writeText(text)
+
+document.getElementById("copyMsg").innerHTML="<span style='color:#00ffae'>Copied!</span>"
+
+}
 
 const canvas=document.createElement("canvas")
 
