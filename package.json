@@ -23,6 +23,7 @@
     "axios": "latest",
     "os": "latest",
     "moment-timezone": "latest",
-    "subz.lk": "latest"
+    "subz.lk": "latest",
+    "abir-photo360-apis": "latest"
   }
 }
