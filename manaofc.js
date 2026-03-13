@@ -1750,7 +1750,7 @@ reply("❌ Config update failed!")
     category: "owner",
     filename: __filename
 },
-async (conn, mek, m, { from, reply }) => {
+async (socket, mek, m, { from, reply }) => {
     try {
         const vcard = 
             'BEGIN:VCARD\n' +
@@ -1761,7 +1761,7 @@ async (conn, mek, m, { from, reply }) => {
             'EMAIL:manishasasmith27@gmail.com\n' +
             'END:VCARD';
 
-        await conn.sendMessage(from, { 
+        await socket.sendMessage(from, { 
             contacts: { 
                 displayName: "manaofc", 
                 contacts: [{ vcard }] 
