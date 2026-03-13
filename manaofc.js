@@ -14,6 +14,7 @@ const apkdl = require('./lib/apkdl');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const cheerio = require('cheerio');
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require('./lib/functions');
+const SubzLK = require("subz.lk");
 
 const {
   default: makeWASocket,
@@ -436,6 +437,11 @@ ${msgData.footer}`;
 //////////// ( COMMAND ADD ) ///////////
 ///////////////////////////////////////
 
+                ///////////////////
+////////////// MAIN COMMAND ////////////////
+            ////////////////////
+
+
   cmd({
     pattern: "ping",
     alias: ["speed", "pong"],
@@ -781,6 +787,11 @@ reply('*ERROR !!*')
 console.log(e)
 }
 })
+
+
+                ///////////////////
+////////////// DOWNLOAD COMMAND ////////////////
+            ////////////////////
 
     /* ================== SONG SEARCH ================== */
     cmd(
@@ -1741,6 +1752,9 @@ reply("❌ Config update failed!")
 
 });
 
+              ///////////////////
+////////////// OWNER COMMAND ////////////////
+            ////////////////////
 
   cmd({
     pattern: "owner",
@@ -1771,6 +1785,93 @@ async (socket, mek, m, { from, reply }) => {
     } catch (e) {
         console.error(e);
         reply('⚠️ An error occurred while fetching owner information.');
+    }
+});
+
+              ///////////////////
+////////////// MOVIE COMMAND ////////////////
+            ////////////////////
+
+
+  cmd({
+    pattern: "subz",
+    react: "🎬",
+    desc: "Search Sinhala subtitles",
+    category: "movie",
+    use: ".subz <movie name>",
+    filename: __filename
+}, async (socket, mek, m, { from, q, prefix, reply }) => {
+
+    try {
+
+        if (!q) return reply("❗ Please enter a Movie name!.\nExample: .subz jurassic");
+
+        reply("⏳ *Searching subtitles...*");
+
+        const data = await SubzLK.search(q);
+
+        if (!data.length) return reply("❌ Subtitle not found!");
+
+        const rows = data.slice(0, 10).map((v) => ({
+            buttonId: `${prefix}subzdl ${v.url}`,
+            buttonText: {
+                displayText: v.title.length > 40
+                    ? v.title.slice(0, 37) + "..."
+                    : v.title
+            },
+            type: 1,
+        }));
+
+        const buttonMessage = {
+            text: "🎬 *Select Your Movie Subtitle*\n\nResults:",
+            footer: "> _Powered By Manaofc_",
+            buttons: rows,
+            headerType: 1
+        };
+
+        await socket.buttonMessage(from, buttonMessage, mek);
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ Error searching subtitles!");
+    }
+});
+
+cmd({
+    pattern: "subzdl",
+    react: "⬇️",
+    dontAddCommandList: true,
+    filename: __filename
+}, async (socket, mek, m, { from, q, reply }) => {
+
+    try {
+
+        if (!q) return reply("❌ Invalid subtitle link!");
+
+        const movie = await SubzLK.getMovie(q);
+
+        const subLink = movie.downloads.subtitle;
+
+        await socket.sendMessage(
+            from,
+            {
+                document: { url: subLink },
+                mimetype: "application/zip",
+                fileName: `${movie.title}.zip`,
+                caption:
+`🎬 *${movie.title}*
+
+👤 Author : ${movie.author}
+📅 ${movie.publishDate}
+
+> _*Powered By Manaofc*_`
+            },
+            { quoted: mek }
+        );
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ Subtitle download failed!");
     }
 });
     /* ================== MESSAGE HANDLER ================== */
