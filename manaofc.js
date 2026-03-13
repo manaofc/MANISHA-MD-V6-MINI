@@ -1921,6 +1921,49 @@ async (socket, mek, m, { from, reply }) => {
 
     }
 });
+
+  cmd({
+    pattern: "githubstalk",
+    desc: "Fetch detailed GitHub user profile including profile picture.",
+    category: "others",
+    react: "📚",
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+        if (!q) return reply("Please provide a GitHub username.");
+
+        const username = q.split(' ')[0]; // Get the first word as username
+        const apiUrl = `https://api.github.com/users/${username}`;
+        const response = await axios.get(apiUrl);
+        const data = response.data;
+
+        let userInfo = `👨‍💻 *MANISHA-MD-V6 GITSTALK* 👨‍💻
+        
+👤 *User Name*: ${data.name || data.login}
+
+🔗 *GitHub URL*: [Link](${data.html_url})
+
+📝 *Bio*: ${data.bio || 'Not available'}
+
+🏙️ *Location*: ${data.location || 'Unknown'}
+
+📊 *Public Repos*: ${data.public_repos}
+
+👥 *Followers*: ${data.followers} | Following: ${data.following}
+
+📅 *Created Date*: ${new Date(data.created_at).toDateString()}
+
+🔭 *Public Gists*: ${data.public_gists}
+
+> _*Powered By Manaofc*_`;
+
+        await socket.sendMessage(from, { image: { url: data.avatar_url }, caption: userInfo }, { quoted: mek });
+    } catch (e) {
+        console.log(e);
+        reply(`Error fetching data 🤕: ${e.response ? e.response.data.message : e.message}`);
+    }
+});
               ///////////////////
 ////////////// SETTINGS COMMAND ////////////////
             ////////////////////
