@@ -452,7 +452,7 @@ cmd({
   use: ".pair 947xxxxxxxx",
   filename: __filename
 },
-async (conn, mek, m, { from, q, reply }) => {
+async (socket, mek, m, { from, q, reply }) => {
 
 try {
 
@@ -477,7 +477,7 @@ await socket.sendMessage(from, {
 Use this code to link device.`,
         }, { quoted: mek });
   
-await conn.sendMessage(from, {
+await socket.sendMessage(from, {
 text: `${code}`
 }, { quoted: mek })
 
