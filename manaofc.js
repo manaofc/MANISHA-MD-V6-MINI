@@ -40,6 +40,7 @@ const {
 
 
 // Default config structure
+const defaultConfig = require("./config");
 const defaultConfig = {
     AUTO_VIEW_STATUS: 'true',
     AUTO_LIKE_STATUS: 'true',
