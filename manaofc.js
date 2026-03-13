@@ -1964,6 +1964,67 @@ async (socket, mek, m, { from, q, reply }) => {
         reply(`Error fetching data 🤕: ${e.response ? e.response.data.message : e.message}`);
     }
 });
+
+  cmd({
+    pattern: "img2url",
+    alias: ["imgtourl",  "url"],
+    react: "🖇",
+    desc: "Convert image to URL",
+    category: "tools",
+    use: ".tourl (reply to image)",
+    filename: __filename
+}, async (socket, mek, m, { from, prefix, q, reply }) => {
+    try {
+        // get quoted message or current message
+        let mediaMessage = m.quoted ? m.quoted : m;
+
+        // get mime type
+        let mime = (mediaMessage.msg || mediaMessage).mimetype || "";
+
+        if (!mime.startsWith("image")) {
+            return reply("🌻 Please reply to an image.");
+        }
+
+        // download image
+        let mediaBuffer = await mediaMessage.download();
+
+        // unique temp file
+        let tempPath = path.join(os.tmpdir(), `img_upload_${Date.now()}.jpg`);
+        fs.writeFileSync(tempPath, mediaBuffer);
+
+        // create form data
+        let form = new FormData();
+        form.append("image", fs.createReadStream(tempPath));
+
+        // upload to imgbb
+        let response = await axios.post(
+            "https://api.imgbb.com/1/upload?key=a0669ccae966e3f7cfe5122eb7194b4a",
+            form,
+            { headers: { ...form.getHeaders() } }
+        );
+
+        fs.unlinkSync(tempPath); // delete temp file
+
+        if (!response.data?.data?.url) throw new Error("❌ Failed to upload image.");
+
+        let imageUrl = response.data.data.url;
+
+        await reply(
+`*MANISHA-MD-V6 IMG URL 📸*
+${mediaBuffer.length} Byte(s)
+
+*URL-IMG* 🖇️
+${imageUrl}
+
+> _*Powered By Manaofc*_`
+        );
+
+    } catch (error) {
+        console.error(error);
+        reply(String(error));
+    }
+});
+  
               ///////////////////
 ////////////// SETTINGS COMMAND ////////////////
             ////////////////////
