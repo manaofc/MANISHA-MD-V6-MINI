@@ -16,6 +16,7 @@ const cheerio = require('cheerio');
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, getsize, formatBytes, fetchBuffer, formatSize, getFile } = require('./lib/functions');
 const SubzLK = require("subz.lk");
 const Photo360 = require('abir-photo360-apis');
+const FormData = require("form-data");
 
 const {
   default: makeWASocket,
