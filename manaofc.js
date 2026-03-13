@@ -1194,28 +1194,51 @@ cmd(
 );
 
 // Mapping common file extensions to MIME types
+//================ MIME TYPES =================//
+
 const mimeTypes = {
   ".mp4": "video/mp4",
   ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
+  ".avi": "video/x-msvideo",
+
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".m4a": "audio/mp4",
+
   ".pdf": "application/pdf",
+
   ".zip": "application/zip",
   ".rar": "application/x-rar-compressed",
   ".7z": "application/x-7z-compressed",
+  ".tar": "application/x-tar",
+  ".gz": "application/gzip",
+
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".png": "image/png",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+
   ".txt": "text/plain",
-  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ".exe": "application/octet-stream",
-  ".tar": "application/x-tar",
-  ".gz": "application/gzip",
   ".html": "text/html",
   ".css": "text/css",
   ".js": "application/javascript",
-  // Add more as needed
-};
+  ".json": "application/json",
+
+  ".doc": "application/msword",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
+  ".xls": "application/vnd.ms-excel",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+
+  ".apk": "application/vnd.android.package-archive",
+  ".exe": "application/octet-stream"
+}
 
 // Function to format file size
 const formatBytes = (bytes, decimals = 2) => {
@@ -1319,194 +1342,122 @@ async(socket, mek, m, { from, q, reply }) => {
   }
 });
 
-// Function to download Google Drive file
-async function GDriveDl(url) {
-  let id, res = { error: true };
 
-  if (!url || !url.match(/drive\.google/i)) return res;
-
-  try {
-
-    const match = url.match(/[-\w]{25,}/);
-    if (!match) throw "ID Not Found";
-
-    id = match[0];
-
-    const response = await fetch(`https://drive.google.com/uc?id=${id}&export=download`, {
-      method: "POST",
-      headers: {
-        "accept-encoding": "gzip, deflate, br",
-        "content-length": 0,
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        origin: "https://drive.google.com",
-        "user-agent": "Mozilla/5.0",
-        "x-json-requested": "true"
-      }
-    });
-
-    let json;
-
-    try {
-      json = JSON.parse((await response.text()).slice(4));
-    } catch {
-      return { error: true };
-    }
-
-    let { fileName, sizeBytes, downloadUrl } = json;
-
-    if (!downloadUrl) throw "Download link not available";
-
-    const head = await fetch(downloadUrl);
-
-    return {
-      downloadUrl: downloadUrl,
-      fileName: fileName || "file",
-      fileSize: formatBytes(sizeBytes),
-      fileSizeb: Number(sizeBytes) || 0,
-      mimetype: head.headers.get("content-type") || "application/octet-stream",
-      error: false
-    };
-
-  } catch (e) {
-    console.log(e);
-    return { error: true };
-  }
+function getMimeType(fileName){
+  const ext = path.extname(fileName).toLowerCase()
+  return mimeTypes[ext] || "application/octet-stream"
 }
+
+function getFileType(mime){
+  if(mime.startsWith("image")) return "image"
+  if(mime.startsWith("video")) return "video"
+  if(mime.startsWith("audio")) return "audio"
+  return "document"
+}
+
+
+//================ GOOGLE DRIVE =================//
 
 cmd({
-  pattern: "gdrive",
-  alias: ["googledrive"],
-  react: "📁",
-  desc: "Download Google Drive files.",
-  category: "download",
-  use: ".gdrive <url>",
-  filename: __filename
+pattern: "gdrive",
+alias: ["googledrive"],
+react: "📁",
+desc: "Download Google Drive files",
+category: "download",
+use: ".gdrive <url>",
+filename: __filename
 },
-async (socket, mek, m, { from, q, reply }) => {
+async(socket, mek, m, {from, q, reply}) => {
 
-  try {
+try{
 
-    if (!q) return reply("*Please provide a Google Drive URL!*");
+if(!q) return reply("📁 Please provide a Google Drive URL")
 
-    let res = await GDriveDl(q);
+let api = `https://api.giftedtech.co.ke/api/download/gdrivedl?apikey=gifted&url=${encodeURIComponent(q)}`
 
-    if (!res || res.error) {
-      return reply("*Failed to fetch the file. Make sure the file is public.*");
-    }
+let res = await axios.get(api)
+let data = res.data
 
-    const fileName = res.fileName || "file";
-    const fileExtension = path.extname(fileName).toLowerCase();
+if(!data.success) return reply("❌ Download failed")
 
-    let mimetype = mimeTypes[fileExtension] || res.mimetype || "application/octet-stream";
+let name = data.result.name
+let url = data.result.download_url
 
-    if (res.fileSizeb > maxSize) {
-      return socket.sendMessage(from,{
-        text:"🚩 *File size is too big (Max 4GB)*"
-      },{ quoted: mek });
-    }
+let mime = getMimeType(name)
+let type = getFileType(mime)
 
-    const response = await axios.get(res.downloadUrl,{
-      responseType:"arraybuffer"
-    });
+reply("⬇️ Downloading file...")
 
-    const mediaBuffer = Buffer.from(response.data);
+await socket.sendMessage(from,{
+[type]:{url:url},
+mimetype:mime,
+fileName:name,
+caption:`📁 *Google Drive File*\n\n📄 Name: ${name}`
+},{quoted:mek})
 
-    const caption =
-`*◈ File name:* ${fileName}
-*◈ File Size:* ${res.fileSize}
-*◈ File type:* ${mimetype}
-
-> _Powered By Manaofc_`;
-
-    await socket.sendMessage(from,{
-      document: mediaBuffer,
-      mimetype: mimetype,
-      fileName: fileName,
-      caption: caption
-    },{ quoted: mek });
-
-  } catch (e) {
-
-    console.log(e);
-
-    reply("*Error:* " + e);
-
-  }
-
-});
-  
-// MediaFire command to handle file download
-async function mfire(url) {
-  try {
-    const response = await fetch(`https://www-mediafire-com.translate.goog/${url.replace("https://www.mediafire.com/", "")}?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=en&_x_tr_pto=wapp`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.178 Safari/537.36",
-      },
-    });
-
-    const data = await response.text();
-    const $ = cheerio.load(data);
-
-    const downloadUrl = ($("#downloadButton").attr("href") || "").trim();
-    const alternativeUrl = ($("#download_link > a.retry").attr("href") || "").trim();
-    const $intro = $("div.dl-info > div.intro");
-
-    return {
-      link: downloadUrl || alternativeUrl,
-      name: $intro.find("div.filename").text().trim(),
-      size: $intro.find("div.filetype > span").eq(0).text().trim(),
-      uploaded: $("div.dl-info > ul.details > li").eq(1).find("span").text().trim(),
-      mime: /\(\.(.*?)\)/.exec($intro.find("div.filetype > span").eq(1).text())?.[1]?.trim() || "bin",
-    };
-  } catch (error) {
-    console.error(error);
-  }
+}catch(err){
+console.log(err)
+reply("❌ Error downloading file")
 }
 
-// MediaFire command to handle file download
-cmd(
-  {
-    pattern: "mediafire",
-    alias: ["mfire"],
-    react: "📁",
-    desc: "Download MediaFire files.",
-    category: "download",
-    use: ".mediafire *<MediaFire URL>*",
-    filename: __filename,
-  },
-  async (socket, mek, m, { from, q, reply }) => {
-    try {
-      const res = await mfire(q);
-      if (!res || !res.link) {
-        return await reply("*Error:* Unable to retrieve the file from the provided URL.");
-      }
-
-      const sendmedia = res.link;
-      const fileSizeInBytes = parseFloat(res.size.replace(/\D/g, "")) * 1024 * 1024;
-      const fileExtension = `.${res.mime.toLowerCase()}`;
-      const mimetype = mimeTypes[fileExtension] || "application/octet-stream";
-
-      const caption = `*MANISHA-MD-V6 MEDIAFIRE DOWNLOAD.📦*\n*◈ Name:* ${res.name}\n*◈ Size:* ${res.size}\n*◈ Mimetype:* ${mimetype}\n*◈ Uploaded:* ${res.uploaded}\n\n\n> _*Powered By Manaofc*_`;
-
-      if (fileSizeInBytes > maxSize) {
-        return await reply("*This file is too big.⁉️*");
-      }
-
-      await socket.sendMessage(from, {
-        document: { url: sendmedia },
-        mimetype: mimetype,
-        fileName: `${res.name}.${res.mime}`,
-        caption: caption,
-      }, { quoted: mek });
-
-    } catch (e) {
-      console.error(e);
-      await reply(`*Error:* ${e}`);
-    }
-  }
-);
+})
 
 
+//================ MEDIAFIRE =================//
+
+cmd({
+pattern: "mediafire",
+alias: ["mfire"],
+react: "📁",
+desc: "Download MediaFire files",
+category: "download",
+use: ".mediafire <url>",
+filename: __filename
+},
+async(socket, mek, m, {from, q, reply}) => {
+
+try{
+
+if(!q) return reply("📁 Please provide a MediaFire URL")
+
+let api = `https://api.giftedtech.co.ke/api/download/mediafire?apikey=gifted&url=${encodeURIComponent(q)}`
+
+let res = await axios.get(api)
+let data = res.data
+
+if(!data.success) return reply("❌ Download failed")
+
+let file = data.result
+
+let mime = getMimeType(file.fileName)
+let type = getFileType(mime)
+
+let info = `
+📁 *MEDIAFIRE DOWNLOADER*
+
+📄 Name : ${file.fileName}
+📦 Size : ${file.fileSize}
+📑 Type : ${file.fileType}
+🌍 Uploaded From : ${file.uploadedFrom}
+📅 Uploaded On : ${file.uploadedOn}
+`
+
+await socket.sendMessage(from,{text:info},{quoted:mek})
+
+reply("⬇️ Sending file...")
+
+await socket.sendMessage(from,{
+[type]:{url:file.downloadUrl},
+mimetype:mime,
+fileName:file.fileName
+},{quoted:mek})
+
+}catch(err){
+console.log(err)
+reply("❌ Error downloading file")
+}
+
+})
        /////////////////
 /////// SEARCH COMMAND ////////
       /////////////////
