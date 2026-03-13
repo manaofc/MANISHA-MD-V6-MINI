@@ -664,6 +664,47 @@ let generatebutton = [{
 })
 
 cmd({
+  pattern: "logomenu",
+  react: "🌌",
+  dontAddCommandList: true,
+  filename: __filename
+},
+async(socket, mek, m, { from, prefix, q, reply }) => {
+  try {
+let menuc = `
+*🌌 MANISHA-MD-V6 LOGO MENU. 🌌*\n\n`
+for (let i=0;i<commands.length;i++) { 
+if(commands[i].category === 'logo'){
+if(!commands[i].dontAddCommandList){
+menuc += `*╭──────────────────❥*
+*╎🔖Command :* ${commands[i].pattern}
+*╎🏷️Desc :* ${commands[i].desc}
+*╎ 🧧Use:* ${commands[i].use}
+*╰──────────────────❥*\n\n
+`
+}}};
+let generatebutton = [{
+    buttonId: `${prefix}ping`,
+    buttonText: {
+        displayText: 'GET BOT\'S PING'
+    },
+    type: 1
+  }]
+let buttonMessaged = {
+  image: defaultConfig.IMAGE_PATH,
+  caption: menuc,
+  footer: '> _*Powered By Manaofc*_ ',
+  headerType: 4,
+  buttons: generatebutton
+};
+return await socket.buttonMessage(from, buttonMessaged, mek);
+} catch (e) {
+reply('*ERROR !!*')
+console.log(e)
+}
+})
+  
+cmd({
     pattern: "othersmenu",
     react: "🎐",
     dontAddCommandList: true,
@@ -1665,7 +1706,7 @@ Object.entries(effects).forEach(([effectName, effectInfo]) => {
 ================================ */
 
 cmd({
-    pattern: "logo list",
+    pattern: "logolist",
     desc: "Show all logo effects",
     category: "logo",
     react: "📋",
@@ -1683,7 +1724,7 @@ async (socket, mek, m, { reply }) => {
 ================================ */
 
 cmd({
-    pattern: "logo random",
+    pattern: "logorandom",
     desc: "Random logo effect",
     category: "logo",
     react: "🎲",
@@ -1712,7 +1753,7 @@ async (socket, mek, m, { from, q, reply }) => {
 ================================ */
 
 cmd({
-    pattern: "logo batch",
+    pattern: "logobatch",
     desc: "Generate multiple logos",
     category: "logo",
     react: "⚡",
