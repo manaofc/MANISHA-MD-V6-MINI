@@ -465,15 +465,20 @@ let res = await axios.get(`https://manaofc-2aee55257fe6.herokuapp.com/code?numbe
 let code = res.data.code
 
 if (!code) return reply("❌ Failed to get code")
-
-await conn.sendMessage(from, {
-text: `🔗 *WhatsApp Pair Code*
+  
+await socket.sendMessage(from, {
+  image: { url: defaultConfig.IMAGE_PATH },
+  caption: `🔗 *WhatsApp Pair Code*
 
 📱 Number : ${num}
 
-🔑 Code : *${code}*
+🔑 Code: 👇
 
 Use this code to link device.`,
+        }, { quoted: mek });
+  
+await conn.sendMessage(from, {
+text: `${code}`
 }, { quoted: mek })
 
 } catch (e) {
