@@ -1272,152 +1272,110 @@ cmd(
     }
   }
 );
-
 /* ================== FACEBOOK DOWNLOAD ================== */
+
 cmd({
-    pattern: "facebook",
-    react: "📥",
-    alias: ["fb", "fbdl"],
-    category: "download",
-    use: ".facebook <facebook url>",
-    filename: __filename
+pattern: "facebook",
+react: "📥",
+alias: ["fb","fbdl"],
+category: "download",
+use: ".facebook <facebook url>",
+filename: __filename
 },
-async (socket, mek, m, { from, prefix, q, reply }) => {
-    try {
+async (sock, mek, m, { from, prefix, q, reply }) => {
 
-        if (!q) return reply("❌ *Please provide a Facebook URL!*");
+try {
 
-        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+if (!q) return reply("❌ *Please provide a Facebook URL!*")
 
-        const res = await axios.get(api);
-        const data = res.data;
+const api = `https://api.giftedtech.co.ke/api/download/facebookv2?apikey=gifted&url=${encodeURIComponent(q)}`
 
-        if (!data.status) return reply("❌ *Failed to fetch Facebook video!*");
+const res = await axios.get(api)
+const data = res.data
 
-        const vid = data.data.data;
+if (!data.success) return reply("❌ *Failed to fetch Facebook video!*")
 
-        const caption = `
-*📥 MANISHA-MD-V6 FACEBOOK DOWNLOAD*
-╭──────────────────❥
-│✨ \`Title\` : ${vid.title}
-│⏱ \`Duration\` : ${vid.duration}
-│👤 \`Uploader\` : ${vid.uploader.name}
-│👀 \`Views\` : ${vid.engagement.views}
-│💬 \`Comments\` : ${vid.engagement.comments}
-╰──────────────────❥
-> _*Powered By Manaofc*_
-`;
+const vid = data.result
 
-        const buttons = [
-            { buttonId: `${prefix}fbhd ${q}`, buttonText: { displayText: "HD VIDEO 🎥" }, type: 1 },
-            { buttonId: `${prefix}fbsd ${q}`, buttonText: { displayText: "SD VIDEO 📹" }, type: 1 },
-            { buttonId: `${prefix}fbaudio ${q}`, buttonText: { displayText: "AUDIO 🎵" }, type: 1 }
-        ];
+const caption = `
+*📥 FACEBOOK DOWNLOADER*
+╭──────────────❍
+│ *Title* : ${vid.title}
+│ *Duration* : ${vid.duration}
+│ *Uploader* : ${vid.uploader}
+│ *Views* : ${vid.view_count}
+╰──────────────❍
 
-        const buttonMessage = {
-            image: vid.thumbnail,
-            caption: caption,
-            footer: "> _Powered By Manaofc_",
-            buttons: buttons,
-            headerType: 4
-        };
+*Select Video Quality*
+`
 
-        await socket.buttonMessage(from, buttonMessage, mek);
+const buttons = [
+{ buttonId: `${prefix}fbq 0 ${q}`, buttonText:{displayText:"1920p HD 🎬"}, type:1 },
+{ buttonId: `${prefix}fbq 1 ${q}`, buttonText:{displayText:"1280p HD 📽"}, type:1 },
+{ buttonId: `${prefix}fbq 2 ${q}`, buttonText:{displayText:"960p 📹"}, type:1 },
+{ buttonId: `${prefix}fbq 3 ${q}`, buttonText:{displayText:"640p 📱"}, type:1 }
+]
 
-    } catch (e) {
-        console.log(e);
-        reply("❌ *Error fetching Facebook video!*");
-    }
-});
+const buttonMessage = {
+image:{url:vid.thumbnail},
+caption:caption,
+footer:"Powered By GiftedTech",
+buttons:buttons,
+headerType:4
+}
 
+await sock.buttonMessage(from, buttonMessage, mek)
 
-/* ================== FACEBOOK HD ================== */
+}catch(e){
+console.log(e)
+reply("❌ Error fetching Facebook video!")
+}
+
+})
+
+/* ================== FACEBOOK QUALITY DOWNLOAD ================== */
+
 cmd({
-    pattern: "fbhd",
-    react: "⬇️",
-    dontAddCommandList: true,
-    filename: __filename
+pattern: "fbq",
+react: "⬇️",
+dontAddCommandList: true,
+filename: __filename
 },
-async (socket, mek, m, { from, q, reply }) => {
-    try {
+async (sock, mek, m, { from, q, reply }) => {
 
-        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+try {
 
-        const res = await axios.get(api);
-        const data = res.data;
+if(!q) return reply("❌ Invalid request!")
 
-        if (!data.status) return reply("❌ *Video not found!*");
+const args = q.split(" ")
+const qualityIndex = args[0]
+const url = args.slice(1).join(" ")
 
-        await socket.sendMessage(from, {
-            video: { url: data.data.data.video.hd },
-            caption: "🎥 *Facebook HD Video Downloaded*"
-        }, { quoted: mek });
+const api = `https://api.giftedtech.co.ke/api/download/facebookv2?apikey=gifted&url=${encodeURIComponent(url)}`
 
-    } catch (e) {
-        console.log(e);
-        reply("❌ *HD download failed!*");
-    }
-});
+const res = await axios.get(api)
+const data = res.data
 
+if (!data.success) return reply("❌ Video not found!")
 
-/* ================== FACEBOOK SD ================== */
-cmd({
-    pattern: "fbsd",
-    react: "📹",
-    dontAddCommandList: true,
-    filename: __filename
-},
-async (socket, mek, m, { from, q, reply }) => {
-    try {
+const links = data.result.links
 
-        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+if(!links[qualityIndex]) return reply("❌ Quality not available!")
 
-        const res = await axios.get(api);
-        const data = res.data;
+const videoUrl = links[qualityIndex].url
+const quality = links[qualityIndex].quality
 
-        if (!data.status) return reply("❌ *Video not found!*");
+await sock.sendMessage(from,{
+video:{url:videoUrl},
+caption:`🎬 *Facebook Video Downloaded*\n\n📺 Quality : ${quality}`
+},{quoted:mek})
 
-        await socket.sendMessage(from, {
-            video: { url: data.data.data.video.sd },
-            caption: "📹 *Facebook SD Video Downloaded*"
-        }, { quoted: mek });
+}catch(e){
+console.log(e)
+reply("❌ Download failed!")
+}
 
-    } catch (e) {
-        console.log(e);
-        reply("❌ *SD download failed!*");
-    }
-});
-
-
-/* ================== FACEBOOK AUDIO ================== */
-cmd({
-    pattern: "fbaudio",
-    react: "🎵",
-    dontAddCommandList: true,
-    filename: __filename
-},
-async (socket, mek, m, { from, q, reply }) => {
-    try {
-
-        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
-
-        const res = await axios.get(api);
-        const data = res.data;
-
-        if (!data.status) return reply("❌ *Audio not found!*");
-
-        await socket.sendMessage(from, {
-            audio: { url: data.data.data.video.audio },
-            mimetype: "audio/mpeg"
-        }, { quoted: mek });
-
-    } catch (e) {
-        console.log(e);
-        reply("❌ *Audio download failed!*");
-    }
-});
-
-
+})
 /* ================== TIKTOK DOWNLOAD ================== */
 cmd({
     pattern: "tiktok",
