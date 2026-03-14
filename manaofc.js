@@ -1317,9 +1317,9 @@ const buttons = [
 ]
 
 const buttonMessage = {
-image:{url:vid.thumbnail},
+image: vid.thumbnail,
 caption:caption,
-footer:"Powered By GiftedTech",
+footer:"> _*Powered By Manaofc*_",
 buttons:buttons,
 headerType:4
 }
@@ -1367,7 +1367,7 @@ const quality = links[qualityIndex].quality
 
 await sock.sendMessage(from,{
 video:{url:videoUrl},
-caption:`🎬 *Facebook Video Downloaded*\n\n📺 Quality : ${quality}`
+caption:`🎬 *Facebook Video Downloaded*\n\n📺 Quality : ${quality}\n\n> _*Powered By Manaofc*_`
 },{quoted:mek})
 
 }catch(e){
@@ -1449,7 +1449,7 @@ async (socket, mek, m, { from, q, reply }) => {
 
         await socket.sendMessage(from, {
             video: { url: data.result.video },
-            caption: "🎬 *TikTok Video Downloaded*"
+            caption: "🎬 *TikTok Video Downloaded*\n\n> _*Powered By Manaofc*_"
         }, { quoted: mek });
 
     } catch (e) {
