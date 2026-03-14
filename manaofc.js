@@ -41,20 +41,7 @@ const {
 
 // Default config structure
 const defaultConfig = require("./config");
-/*
-const defaultConfig = {
-    AUTO_VIEW_STATUS: 'true',
-    AUTO_LIKE_STATUS: 'true',
-    AUTO_RECORDING: 'true',
-    AUTO_LIKE_EMOJI: ['💥', '👍', '😍', '💗', '🎈', '🎉', '🥳', '😎', '🚀', '🔥'],
-    PREFIX: '.',
-    MAX_RETRIES: 3,
-    WORK_TYPE: 'private',
-    ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
-    OWNER_NUMBER: '94759934522'
-};
-*/
+
 
 // GitHub Octokit initialization
 let octokit;
@@ -1286,6 +1273,262 @@ cmd(
   }
 );
 
+/* ================== FACEBOOK DOWNLOAD ================== */
+cmd({
+    pattern: "facebook",
+    react: "📥",
+    alias: ["fb", "fbdl"],
+    category: "download",
+    use: ".facebook <facebook url>",
+    filename: __filename
+},
+async (socket, mek, m, { from, prefix, q, reply }) => {
+    try {
+
+        if (!q) return reply("❌ *Please provide a Facebook URL!*");
+
+        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.status) return reply("❌ *Failed to fetch Facebook video!*");
+
+        const vid = data.data.data;
+
+        const caption = `
+*📥 MANISHA-MD-V6 FACEBOOK DOWNLOAD*
+╭──────────────────❥
+│✨ \`Title\` : ${vid.title}
+│⏱ \`Duration\` : ${vid.duration}
+│👤 \`Uploader\` : ${vid.uploader.name}
+│👀 \`Views\` : ${vid.engagement.views}
+│💬 \`Comments\` : ${vid.engagement.comments}
+╰──────────────────❥
+> _*Powered By Manaofc*_
+`;
+
+        const buttons = [
+            { buttonId: `${prefix}fbhd ${q}`, buttonText: { displayText: "HD VIDEO 🎥" }, type: 1 },
+            { buttonId: `${prefix}fbsd ${q}`, buttonText: { displayText: "SD VIDEO 📹" }, type: 1 },
+            { buttonId: `${prefix}fbaudio ${q}`, buttonText: { displayText: "AUDIO 🎵" }, type: 1 }
+        ];
+
+        const buttonMessage = {
+            image: vid.thumbnail,
+            caption: caption,
+            footer: "> _Powered By Manaofc_",
+            buttons: buttons,
+            headerType: 4
+        };
+
+        await socket.buttonMessage(from, buttonMessage, mek);
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *Error fetching Facebook video!*");
+    }
+});
+
+
+/* ================== FACEBOOK HD ================== */
+cmd({
+    pattern: "fbhd",
+    react: "⬇️",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+
+        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.status) return reply("❌ *Video not found!*");
+
+        await socket.sendMessage(from, {
+            video: { url: data.data.data.video.hd },
+            caption: "🎥 *Facebook HD Video Downloaded*"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *HD download failed!*");
+    }
+});
+
+
+/* ================== FACEBOOK SD ================== */
+cmd({
+    pattern: "fbsd",
+    react: "📹",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+
+        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.status) return reply("❌ *Video not found!*");
+
+        await socket.sendMessage(from, {
+            video: { url: data.data.data.video.sd },
+            caption: "📹 *Facebook SD Video Downloaded*"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *SD download failed!*");
+    }
+});
+
+
+/* ================== FACEBOOK AUDIO ================== */
+cmd({
+    pattern: "fbaudio",
+    react: "🎵",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+
+        const api = `https://api-dark-shan-yt.koyeb.app/download/facebook?url=${encodeURIComponent(q)}&apikey=82d73cfc7453a625`;
+
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.status) return reply("❌ *Audio not found!*");
+
+        await socket.sendMessage(from, {
+            audio: { url: data.data.data.video.audio },
+            mimetype: "audio/mpeg"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *Audio download failed!*");
+    }
+});
+
+
+/* ================== TIKTOK DOWNLOAD ================== */
+cmd({
+    pattern: "tiktok",
+    react: "🎬",
+    alias: ["tt", "ttdl"],
+    category: "download",
+    use: ".tiktok <tiktok url>",
+    filename: __filename
+},
+async (socket, mek, m, { from, prefix, q, reply }) => {
+    try {
+
+        if (!q) return reply("❌ *Please provide a TikTok URL!*");
+
+        const api = `https://api.giftedtech.co.ke/api/download/tiktok?apikey=gifted&url=${encodeURIComponent(q)}`;
+
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.success) return reply("❌ *Failed to download TikTok video!*");
+
+        const vid = data.result;
+
+        const caption = `
+*🎬 MANISHA-MD-V6 TIKTOK DOWNLOAD 📥*
+╭──────────────────❥
+│✨ \`Title\` : ${vid.title}
+│⏱ \`Duration\` : ${vid.duration}s
+│👤 \`Author\` : ${vid.author.name}
+╰──────────────────❥
+> _*Powered By Manaofc*_
+`;
+
+        const buttons = [
+            { buttonId: `${prefix}ttvid ${q}`, buttonText: { displayText: "VIDEO 🎥" }, type: 1 },
+            { buttonId: `${prefix}ttmusic ${q}`, buttonText: { displayText: "AUDIO 🎵" }, type: 1 }
+        ];
+
+        const buttonMessage = {
+            image: vid.cover,
+            caption: caption,
+            footer: "> _Powered By Manaofc_",
+            buttons: buttons,
+            headerType: 4
+        };
+
+        await socket.buttonMessage(from, buttonMessage, mek);
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *Error downloading TikTok!*");
+    }
+});
+
+
+/* ================== TIKTOK VIDEO ================== */
+cmd({
+    pattern: "ttvid",
+    react: "⬇️",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+
+        const api = `https://api.giftedtech.co.ke/api/download/tiktok?apikey=gifted&url=${encodeURIComponent(q)}`;
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.success) return reply("❌ *Video not found!*");
+
+        await socket.sendMessage(from, {
+            video: { url: data.result.video },
+            caption: "🎬 *TikTok Video Downloaded*"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *Video download failed!*");
+    }
+});
+
+
+/* ================== TIKTOK AUDIO ================== */
+cmd({
+    pattern: "ttmusic",
+    react: "🎵",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (socket, mek, m, { from, q, reply }) => {
+    try {
+
+        const api = `https://api.giftedtech.co.ke/api/download/tiktok?apikey=gifted&url=${encodeURIComponent(q)}`;
+        const res = await axios.get(api);
+        const data = res.data;
+
+        if (!data.success) return reply("❌ *Audio not found!*");
+
+        await socket.sendMessage(from, {
+            audio: { url: data.result.music },
+            mimetype: "audio/mpeg"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply("❌ *Audio download failed!*");
+    }
+});
+
+  
 // Mapping common file extensions to MIME types
 //================ MIME TYPES =================//
 
