@@ -2516,6 +2516,14 @@ cmd({
     }
 });
     /* ================== MESSAGE HANDLER ================== */
+  socket.ev.on('messages.update', async updates => {
+    for (const update of updates) {
+      if (update.update.message === null) {
+        console.log("Delete Detected:", JSON.stringify(update, null, 2));
+        await AntiDelete(socket, updates);
+      }
+    }
+  });
     socket.ev.on("messages.upsert", async ({ messages }) => {
         const mek = messages[0];
         if (!mek.message || mek.key.remoteJid === "status@broadcast") return;
