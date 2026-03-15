@@ -9,5 +9,5 @@ module.exports = {
     ADMIN_LIST_PATH: './admin.json',
     IMAGE_PATH: 'https://i.ibb.co/S4Cf2kZg/IMG-0773.png',
     OWNER_NUMBER: '94759934522',
-    ANTI_DEL_PATH: 'log'
+    ANTI_DELETE: 'true'
 };
