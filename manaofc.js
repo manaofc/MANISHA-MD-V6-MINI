@@ -17,6 +17,7 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 const SubzLK = require("subz.lk");
 const Photo360 = require('abir-photo360-apis');
 const FormData = require("form-data");
+const { AntiDelDB, initializeAntiDeleteSettings, setAnti, getAnti, getAllAntiDeleteSettings, saveContact, loadMessage, getName, getChatSummary, saveGroupMetadata, getGroupMetadata, saveMessageCount, getInactiveGroupMembers, getGroupMembersMessageCount, saveMessage } = require('./lib');
 
 const {
   default: makeWASocket,
