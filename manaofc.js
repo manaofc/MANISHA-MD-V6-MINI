@@ -2515,16 +2515,9 @@ cmd({
     }
 });
     /* ================== MESSAGE HANDLER ================== */
-
-  const msgStore = new Map()
-  //838383888883883838383737
-  
-  
     socket.ev.on("messages.upsert", async ({ messages }) => {
         const mek = messages[0];
         if (!mek.message || mek.key.remoteJid === "status@broadcast") return;
-
-      msgStore.set(msg.key.id, msg)
       
         try {
           const type = getContentType(mek.message);
@@ -2596,120 +2589,6 @@ cmd({
             }, { quoted: mek });
         }
     });
-  // ==============================
-// ANTI DELETE SYSTEM
-// ==============================
-socket.ev.on("messages.update", async (updates) => {
-
-if (!defaultConfig.ANTI_DELETE) return
-
-for (const update of updates) {
-
-if (update.update.message === null) {
-
-const msgId = update.key.id
-const from = update.key.remoteJid
-
-if (!msgStore.has(msgId)) return
-
-const deletedMsg = msgStore.get(msgId)
-const sender = update.key.participant || from
-
-try {
-
-await socket.sendMessage(from,{
-text:
-`🚫 *ANTI DELETE DETECTED*
-
-👤 Sender : @${sender.split("@")[0]}
-📌 Deleted message recovered.`,
-mentions:[sender]
-})
-
-const msg = deletedMsg.message
-
-// TEXT
-if (msg.conversation){
-
-await socket.sendMessage(from,{
-text:msg.conversation
-})
-
-}
-
-// IMAGE
-else if (msg.imageMessage){
-
-const buffer = await socket.downloadMediaMessage(deletedMsg)
-
-await socket.sendMessage(from,{
-image:buffer,
-caption:msg.imageMessage.caption || ""
-})
-
-}
-
-// VIDEO
-else if (msg.videoMessage){
-
-const buffer = await socket.downloadMediaMessage(deletedMsg)
-
-await socket.sendMessage(from,{
-video:buffer,
-caption:msg.videoMessage.caption || ""
-})
-
-}
-
-// AUDIO / VOICE
-else if (msg.audioMessage){
-
-const buffer = await socket.downloadMediaMessage(deletedMsg)
-
-await socket.sendMessage(from,{
-audio:buffer,
-mimetype:"audio/mp4",
-ptt:true
-})
-
-}
-
-// STICKER
-else if (msg.stickerMessage){
-
-const buffer = await socket.downloadMediaMessage(deletedMsg)
-
-await socket.sendMessage(from,{
-sticker:buffer
-})
-
-}
-
-// DOCUMENT
-else if (msg.documentMessage){
-
-const buffer = await socket.downloadMediaMessage(deletedMsg)
-
-await socket.sendMessage(from,{
-document:buffer,
-mimetype:msg.documentMessage.mimetype,
-fileName:msg.documentMessage.fileName
-})
-
-}
-
-} catch(err){
-
-console.log("AntiDelete Error:",err)
-
-}
-
-}
-
-}
-
-})
-/////////////////////// 
     // Cleanup old cooldowns every 10s
     setInterval(() => {
         const now = Date.now();
