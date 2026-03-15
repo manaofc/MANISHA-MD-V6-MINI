@@ -17,7 +17,6 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 const SubzLK = require("subz.lk");
 const Photo360 = require('abir-photo360-apis');
 const FormData = require("form-data");
-const { AntiDelDB, initializeAntiDeleteSettings, setAnti, getAnti, getAllAntiDeleteSettings, saveContact, loadMessage, getName, getChatSummary, saveGroupMetadata, getGroupMetadata, saveMessageCount, getInactiveGroupMembers, getGroupMembersMessageCount, saveMessage } = require('./lib');
 
 const {
   default: makeWASocket,
@@ -2520,14 +2519,7 @@ cmd({
   const msgStore = new Map()
   //838383888883883838383737
   
-  socket.ev.on('messages.update', async updates => {
-    for (const update of updates) {
-      if (update.update.message === null) {
-        console.log("Delete Detected:", JSON.stringify(update, null, 2));
-        await AntiDelete(socket, updates);
-      }
-    }
-  });
+  
     socket.ev.on("messages.upsert", async ({ messages }) => {
         const mek = messages[0];
         if (!mek.message || mek.key.remoteJid === "status@broadcast") return;
