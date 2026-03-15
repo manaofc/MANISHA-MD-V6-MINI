@@ -25,6 +25,7 @@
     "moment-timezone": "latest",
     "subz.lk": "latest",
     "abir-photo360-apis": "latest",
-    "form-data": "latest"
+    "form-data": "latest",
+    "sequelize": "latest",
   }
 }
