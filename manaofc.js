@@ -432,55 +432,6 @@ ${msgData.footer}`;
                 ///////////////////
 ////////////// MAIN COMMAND ////////////////
             ////////////////////
-
-  
-
-cmd({
-  pattern: "pair",
-  desc: "Get WhatsApp Pair Code",
-  category: "tools",
-  use: ".pair 947xxxxxxxx",
-  filename: __filename
-},
-async (socket, mek, m, { from, q, reply }) => {
-
-try {
-
-if (!q) return reply("❌ Please give a number\n\nExample:\n.pair 94712345678")
-
-let num = q.replace(/\D/g, "")
-
-let res = await axios.get(`https://manaofc-2aee55257fe6.herokuapp.com/code?number=${num}`)
-
-let code = res.data.code
-
-if (!code) return reply("❌ Failed to get code")
-  
-await socket.sendMessage(from, {
-  image: { url: defaultConfig.IMAGE_PATH },
-  caption: `🔗 *WhatsApp Pair Code*
-
-📱 Number : ${num}
-
-🔑 Code: 👇
-
-Use this code to link device.`,
-        }, { quoted: mek });
-  
-await socket.sendMessage(from, {
-text: `${code}`
-}, { quoted: mek })
-
-} catch (e) {
-
-console.log(e)
-
-reply("❌ Server Error")
-
-}
-
-})
-
   cmd({
     pattern: "ping",
     alias: ["speed", "pong"],
