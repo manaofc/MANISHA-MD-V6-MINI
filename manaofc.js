@@ -7,7 +7,7 @@ const { exec } = require('child_process');
 const router = express.Router();
 const pino = require('pino');
 const os = require('os');
-const { Octokit } = require('@octokit/rest');
+//const { Octokit } = require('@octokit/rest');
 const moment = require('moment-timezone');
 const { File } = require('megajs');
 const apkdl = require('./lib/apkdl');
@@ -53,14 +53,28 @@ const defaultConfig = {
     OWNER_NUMBER: '94759934522'
 };
 
+let octokit;
 
+async function init() {
+    const { Octokit } = await import('@octokit/rest');
+
+    if (process.env.GITHUB_TOKEN) {
+        octokit = new Octokit({
+            auth: process.env.GITHUB_TOKEN
+        });
+    }
+}
+
+init();
 // GitHub Octokit initialization
+/*
 let octokit;
 if (process.env.GITHUB_TOKEN) {
     octokit = new Octokit({
         auth: process.env.GITHUB_TOKEN
     });
 }
+*/
 const owner = process.env.GITHUB_REPO_OWNER;
 const repo = process.env.GITHUB_REPO_NAME;
 
