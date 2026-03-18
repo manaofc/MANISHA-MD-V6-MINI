@@ -3,6 +3,7 @@
   "version": "v.6",
   "description": " WhatsApp Bot with Multi-Number Support",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
